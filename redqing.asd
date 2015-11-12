@@ -25,8 +25,8 @@
                :alexandria)
   :components ((:module "src"
                 :components
-                ((:file "redqing" :depends-on ("core"))
-                 (:module "core"
+                ((:file "redqing" :depends-on ("client"))
+                 (:module "client"
                   :components
                   ((:file "connection" :depends-on ("coder"))
                    (:file "job")

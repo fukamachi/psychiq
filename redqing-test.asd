@@ -16,7 +16,7 @@
   :components ((:module "t"
                 :components
                 ((:test-file "redqing")
-                 (:module "core"
+                 (:module "client"
                   :components
                   ((:test-file "coder")
                    (:test-file "connection")
