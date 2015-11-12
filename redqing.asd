@@ -29,7 +29,7 @@
                  (:module "core"
                   :components
                   ((:file "connection" :depends-on ("coder"))
-                   (:file "job" :depends-on ("connection" "queue" "coder"))
+                   (:file "job")
                    (:file "queue" :depends-on ("connection"))
                    (:file "coder"))))))
   :description "Redis-backed job queueing system"

@@ -3,10 +3,12 @@
   (:nicknames #:redq)
   (:use #:cl)
   (:import-from #:redqing.connection
-                #:connection)
-  (:import-from #:redqing.job
-                #:job
-                #:enqueue-job)
+                #:connection
+                #:connection-coder)
+  (:import-from #:redqing.queue
+                #:enqueue-to-queue)
+  (:import-from #:redqing.coder
+                #:encode)
   (:export #:enqueue))
 (in-package :redqing)
 
@@ -14,16 +16,14 @@
                            :include '(#:connect #:disconnect #:reconnect #:with-redis-connection #:connectedp))
 
 (cl-reexport:reexport-from :redqing.job
-                           :include '(#:job #:job-class #:job-args #:job-queue #:perform #:enqueue-job #:fail-job))
+                           :include '(#:job #:perform #:fail-job))
 
-(defgeneric enqueue (connection queue job-or-job-class &optional args))
+(defgeneric enqueue (connection queue job-class &optional args))
 
-(defmethod enqueue ((connection connection) queue (job job) &optional args)
-  (declare (ignore queue args))
-  (enqueue-job connection job))
-
-(defmethod enqueue ((connection connection) queue (job-class symbol) &optional args)
-  (enqueue connection queue
-           (make-instance job-class
-                          :args args
-                          :queue queue)))
+(defmethod enqueue ((conn connection) queue (job-class symbol) &optional args)
+  (let ((payload (encode (connection-coder conn)
+                         `(("class" . ,job-class)
+                           ("args" . ,args)))))
+    (enqueue-to-queue conn
+                      queue
+                      payload)))
