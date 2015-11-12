@@ -20,7 +20,8 @@
                   :components
                   ((:test-file "coder")
                    (:test-file "connection")
-                   (:test-file "queue"))))))
+                   (:test-file "queue")
+                   (:test-file "job"))))))
   :description "Test system for redqing"
 
   :defsystem-depends-on (:prove-asdf)

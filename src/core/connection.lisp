@@ -51,7 +51,7 @@
 (defgeneric close-connection (conn)
   (:method ((conn connection))
     (unless (connectedp conn)
-      (return-from close-connection))
+      (error "~A is already closed" conn))
 
     (redis:close-connection (redis-connection conn))
     conn))

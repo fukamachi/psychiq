@@ -8,11 +8,12 @@
 
 (defclass job () ())
 
-(defgeneric perform (job)
-  (:method ((job job))
-    ;; nothing to do
-    )
-  (:method :around ((job job))
+(defgeneric perform (job &rest args)
+  (:method ((job job) &rest args)
+    (declare (ignore args))
+    (error "PEFORM is not implemented for ~S" (class-name (class-of job))))
+  (:method :around ((job job) &rest args)
+    (declare (ignore args))
     (handler-bind ((error
                      (lambda (exception)
                        (fail-job job exception))))
