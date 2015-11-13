@@ -3,7 +3,10 @@
   (:use #:cl)
   (:import-from #:alexandria
                 #:with-gensyms)
-  (:export #:with-transaction))
+  (:export #:with-transaction
+
+           #:*redqing-namespace*
+           #:redis-key))
 (in-package :redqing.redis)
 
 (defmacro with-transaction (&body body)
@@ -16,3 +19,10 @@
          (if ,ok
              (red:exec)
              (red:discard))))))
+
+(defvar *redqing-namespace* "redqing")
+
+(defun redis-key (&rest keys)
+  (format nil "~A:~{~A~^:~}"
+          *redqing-namespace*
+          keys))

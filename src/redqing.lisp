@@ -18,6 +18,9 @@
 (cl-reexport:reexport-from :redqing.job
                            :include '(#:job #:perform))
 
+(cl-reexport:reexport-from :redqing.redis
+                           :include '(#:*redqing-namespace*))
+
 (defun generate-random-id (&optional (length 12))
   (format nil "~(~36,8,'0R~)" (random (expt 36 length))))
 

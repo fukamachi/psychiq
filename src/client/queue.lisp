@@ -8,7 +8,8 @@
   (:import-from #:redqing.coder
                 #:encode)
   (:import-from #:redqing.redis
-                #:with-transaction)
+                #:with-transaction
+                #:redis-key)
   (:import-from #:local-time
                 #:timestamp-to-unix
                 #:now)
@@ -25,6 +26,6 @@
     (with-redis-connection conn
       (with-transaction
         (nconcf payload `(("enqueued_at" . ,(timestamp-to-unix (now)))))
-        (red:sadd "redqing:queues" queue)
-        (red:rpush (format nil "redqing:queue:~A" queue)
+        (red:sadd (redis-key "queues") queue)
+        (red:rpush (redis-key "queue" queue)
                    (encode-payload payload))))))
