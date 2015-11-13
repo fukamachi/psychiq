@@ -40,7 +40,7 @@
                  (:module "worker"
                   :depends-on ("core" "redis")
                   :components
-                  ((:file "child"))))))
+                  ((:file "processor"))))))
   :description "Redis-backed job queueing system"
   :long-description
   #.(with-open-file (stream (merge-pathnames
