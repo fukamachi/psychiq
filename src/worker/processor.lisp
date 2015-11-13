@@ -13,7 +13,9 @@
   (:import-from #:redqing.coder
                 #:decode)
   (:export #:processor
+           #:make-processor
            #:processor-stopped-p
+           #:processor-manager
            #:run
            #:start
            #:stop
@@ -26,6 +28,7 @@
 (defstruct processor
   (connection nil :type connection)
   (queues '() :type list)
+  (manager nil)
   (thread nil)
   (stopped-p nil))
 
@@ -63,13 +66,17 @@
           (bt:make-thread
            (lambda ()
              (run processor))
-           :initial-bindings `((*standard-output* . ,*standard-output*))))
+           :initial-bindings `((*standard-output* . ,*standard-output*))
+           :name "redqing processor"))
     processor))
 
 (defgeneric stop (processor)
   (:method ((processor processor))
+    (when (processor-stopped-p processor)
+      (return-from stop nil))
     (vom:info "Exiting...")
-    (setf (processor-stopped-p processor) t)))
+    (setf (processor-stopped-p processor) t)
+    t))
 
 (defgeneric kill (processor)
   (:method ((processor processor))
@@ -79,7 +86,7 @@
                  (bt:thread-alive-p thread))
         (bt:destroy-thread thread)))
     (setf (processor-thread processor) nil)
-    processor))
+    t))
 
 (defun decode-job (job-info)
   (let ((class (cdr (assoc "class" job-info :test #'string=)))
