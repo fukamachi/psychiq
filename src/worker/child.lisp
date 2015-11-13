@@ -1,5 +1,5 @@
 (in-package :cl-user)
-(defpackage redqing.worker.worker
+(defpackage redqing.worker.child
   (:use #:cl)
   (:import-from #:redqing.connection
                 #:connection
@@ -16,7 +16,7 @@
            #:start-worker
            #:shutdown-worker
            #:kill-worker))
-(in-package :redqing.worker.worker)
+(in-package :redqing.worker.child)
 
 (defstruct worker
   (connection nil :type (or null connection))
