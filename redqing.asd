@@ -27,7 +27,8 @@
                :alexandria)
   :components ((:module "src"
                 :components
-                ((:file "redqing" :depends-on ("core" "redis"))
+                ((:file "redqing" :depends-on ("core" "redis" "client"))
+                 (:file "client")
                  (:file "redis")
                  (:module "core"
                   :depends-on ("redis")
