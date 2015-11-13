@@ -22,6 +22,7 @@
                :jonathan
                :local-time
                :cl-reexport
+               :bordeaux-threads
                :vom
                :alexandria)
   :components ((:module "src"
@@ -34,7 +35,11 @@
                   ((:file "connection" :depends-on ("coder"))
                    (:file "job")
                    (:file "queue" :depends-on ("connection"))
-                   (:file "coder"))))))
+                   (:file "coder")))
+                 (:module "worker"
+                  :depends-on ("client" "redis")
+                  :components
+                  ((:file "worker"))))))
   :description "Redis-backed job queueing system"
   :long-description
   #.(with-open-file (stream (merge-pathnames

@@ -13,6 +13,7 @@
 
            ;; Connection APIs
            #:connection
+           #:connection-coder
            #:open-connection
            #:close-connection
            #:connectedp))
