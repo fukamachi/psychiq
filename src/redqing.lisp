@@ -16,7 +16,7 @@
                            :include '(#:connect #:disconnect #:reconnect #:with-redis-connection #:connectedp))
 
 (cl-reexport:reexport-from :redqing.job
-                           :include '(#:job #:perform #:fail-job))
+                           :include '(#:job #:perform))
 
 (defun generate-random-id (&optional (length 12))
   (format nil "~(~36,8,'0R~)" (random (expt 36 length))))

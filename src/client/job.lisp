@@ -2,8 +2,7 @@
 (defpackage redqing.job
   (:use #:cl)
   (:export #:job
-           #:perform
-           #:fail-job))
+           #:perform))
 (in-package :redqing.job)
 
 (defclass job () ())
@@ -12,7 +11,3 @@
   (:method ((job job) &rest args)
     (declare (ignore args))
     (error "PEFORM is not implemented for ~S" (class-name (class-of job)))))
-
-(defgeneric fail-job (job exception)
-  (:method ((job job) exception)
-    (vom:info "~A failed: ~A" job exception)))
