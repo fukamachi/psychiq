@@ -13,7 +13,7 @@
   (queues '())
   (children '())
   (lock (bt:make-lock))
-  (stopped-p nil))
+  (stopped-p t))
 
 (defun make-manager (&key connection queues (count 25))
   (let ((manager (%make-manager :connection connection :queues queues)))
@@ -55,6 +55,7 @@
     (call-next-method)))
 
 (defmethod start ((manager manager))
+  (setf (manager-stopped-p manager) nil)
   (map nil #'start (manager-children manager))
   manager)
 

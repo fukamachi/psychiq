@@ -17,10 +17,18 @@
 (defun generate-random-id (&optional (length 12))
   (format nil "~(~36,8,'0R~)" (random (expt 36 length))))
 
+(defun symbol-name-with-package (symbol)
+  (let ((package (symbol-package symbol)))
+    (unless package
+      (error "Uninterned symbol is not allowed"))
+    (format nil "~A::~A"
+            (package-name package)
+            (symbol-name symbol))))
+
 (defgeneric enqueue (connection queue job-class &optional args))
 
 (defmethod enqueue ((conn connection) queue (job-class symbol) &optional args)
-  (let ((payload `(("class" . ,job-class)
+  (let ((payload `(("class" . ,(symbol-name-with-package job-class))
                    ("args" . ,args)
                    ("jid" . ,(generate-random-id))
                    ("created_at" . ,(timestamp-to-unix (now))))))

@@ -30,18 +30,19 @@
   (queues '() :type list)
   (manager nil)
   (thread nil)
-  (stopped-p nil))
+  (stopped-p t))
 
 (defgeneric fetch-job (processor &key timeout)
   (:method ((processor processor) &key (timeout 5))
     (let ((ret
             (with-redis-connection (processor-connection processor)
               (apply #'red:blpop
-                     (mapcar (lambda (queue)
-                               (redis-key "queue" queue))
-                             ;; TODO: allow to shuffle the queues
-                             (processor-queues processor))
-                     (list timeout)))))
+                     (nconc
+                      (mapcar (lambda (queue)
+                                (redis-key "queue" queue))
+                              ;; TODO: allow to shuffle the queues
+                              (processor-queues processor))
+                      (list timeout))))))
       (if ret
           (destructuring-bind (queue payload) ret
             (vom:debug "Found job on ~A" queue)
@@ -55,7 +56,7 @@
       until (processor-stopped-p processor)
       do (let ((job-info (fetch-job processor :timeout timeout)))
            (if job-info
-               (process-job job-info)
+               (process-job processor job-info)
                (vom:debug "Timed out after ~D seconds" timeout))))))
 
 (defgeneric start (processor)
@@ -89,11 +90,11 @@
     t))
 
 (defun decode-job (job-info)
-  (let ((class (cdr (assoc "class" job-info :test #'string=)))
-        (args  (cdr (assoc "args"  job-info :test #'string=))))
+  (let ((class (assoc "class" job-info :test #'string=))
+        (args  (assoc "args"  job-info :test #'string=)))
     (unless (and class args)
       (error "Invalid job: ~S" job-info))
-    (let ((class (read-from-string class)))
+    (let ((class (read-from-string (cdr class))))
       (check-type class symbol)
       (let ((job (make-instance class)))
         (check-type job job)
@@ -101,7 +102,6 @@
 
 (defgeneric process-job (processor job-info)
   (:method ((processor processor) job-info)
-    (declare (ignore processor))
     (let ((job (decode-job job-info))
           (args (cdr (assoc "args" job-info :test #'string=))))
       (vom:info "got: ~A ~S" job args)
