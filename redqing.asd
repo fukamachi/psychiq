@@ -27,9 +27,9 @@
                :alexandria)
   :components ((:module "src"
                 :components
-                ((:file "redqing" :depends-on ("client" "redis"))
+                ((:file "redqing" :depends-on ("core" "redis"))
                  (:file "redis")
-                 (:module "client"
+                 (:module "core"
                   :depends-on ("redis")
                   :components
                   ((:file "connection" :depends-on ("coder"))
@@ -37,7 +37,7 @@
                    (:file "queue" :depends-on ("connection"))
                    (:file "coder")))
                  (:module "worker"
-                  :depends-on ("client" "redis")
+                  :depends-on ("core" "redis")
                   :components
                   ((:file "worker"))))))
   :description "Redis-backed job queueing system"
