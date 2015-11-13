@@ -20,13 +20,16 @@
   :license "LLGPL"
   :depends-on (:cl-redis
                :jonathan
+               :local-time
                :cl-reexport
                :vom
                :alexandria)
   :components ((:module "src"
                 :components
                 ((:file "redqing" :depends-on ("client"))
+                 (:file "redis")
                  (:module "client"
+                  :depends-on ("redis")
                   :components
                   ((:file "connection" :depends-on ("coder"))
                    (:file "job")

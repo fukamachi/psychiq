@@ -13,7 +13,12 @@
        (progn
          (with-redis-connection conn
            (red:del "redqing:queue:test"))
-         (is (enqueue-to-queue conn "test" "12") 1
+         (is (enqueue-to-queue conn
+                               "test"
+                               `(("class" . "test-job")
+                                 ("args" . ("12"))
+                                 ("jid" . "9hrm7ofvc44u")))
+             "QUEUED"
              "Can enqueue"))
     (disconnect conn)))
 
