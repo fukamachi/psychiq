@@ -113,6 +113,7 @@
                  (bt:thread-alive-p thread))
         (bt:destroy-thread thread)))
     (setf (processor-thread processor) nil)
+    (setf (processor-stopped-p processor) t)
     t))
 
 (defun decode-job (job-info)
