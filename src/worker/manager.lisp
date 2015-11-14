@@ -12,7 +12,8 @@
 (in-package :redqing.worker.manager)
 
 (defstruct (manager (:constructor %make-manager))
-  (connection nil)
+  host
+  port
   (queues '())
   (children '())
   (lock (bt:make-lock))
@@ -26,14 +27,12 @@
               (length children)
               stopped-p))))
 
-(defun make-manager (&key connection queues (count 25))
-  (unless (and (listp queues)
-               queues)
-    (error ":queues must be a list containing at least one queue name"))
-  (let ((manager (%make-manager :connection connection :queues queues)))
+(defun make-manager (&key (host "localhost") (port 6379) queues (count 25))
+  (let ((manager (%make-manager :host host :port port :queues queues)))
     (setf (manager-children manager)
           (loop repeat count
-                collect (make-processor :connection connection
+                collect (make-processor :host host
+                                        :port port
                                         :queues queues
                                         :manager manager)))
     manager))
@@ -52,7 +51,8 @@
           (delete processor (manager-children manager) :test #'eq))
     (unless (manager-stopped-p manager)
       (let ((new-processor
-              (make-processor :connection (manager-connection manager)
+              (make-processor :host (manager-host manager)
+                              :port (manager-port manager)
                               :queues (manager-queues manager)
                               :manager manager)))
         (push new-processor (manager-children manager))

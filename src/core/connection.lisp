@@ -9,6 +9,8 @@
   (:export #:connect
            #:disconnect
            #:reconnect
+           #:ensure-connected
+           #:make-connection
            #:with-redis-connection
 
            ;; Connection APIs
@@ -70,9 +72,18 @@
        (let ((redis::*connection* (redis-connection ,conn)))
          ,@body))))
 
+(defun make-connection (&rest initargs &key host port)
+  (declare (ignore host port))
+  (apply #'make-instance 'connection initargs))
+
 (defun connect (&rest initargs &key host port)
   (declare (ignore host port))
-  (open-connection (apply #'make-instance 'connection initargs)))
+  (open-connection (apply #'make-connection initargs)))
+
+(defun ensure-connected (conn)
+  (if (connectedp conn)
+      conn
+      (open-connection conn)))
 
 (defun disconnect (conn)
   (close-connection conn))

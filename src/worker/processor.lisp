@@ -4,6 +4,9 @@
   (:import-from #:redqing.connection
                 #:connection
                 #:connection-coder
+                #:make-connection
+                #:ensure-connected
+                #:close-connection
                 #:with-redis-connection)
   (:import-from #:redqing.job
                 #:job
@@ -25,7 +28,7 @@
            #:perform-job))
 (in-package :redqing.worker.processor)
 
-(defstruct processor
+(defstruct (processor (:constructor %make-processor))
   (connection nil :type connection)
   (queues '() :type list)
   (manager nil)
@@ -38,6 +41,13 @@
       (format stream "QUEUES: ~A / STATUS: ~:[RUNNING~;STOPPED~]"
               queues
               stopped-p))))
+
+(defun make-processor (&key (host "localhost") (port 6379) queues manager)
+  (unless (and (listp queues)
+               queues)
+    (error ":queues must be a list containing at least one queue name"))
+  (let ((conn (make-connection :host host :port port)))
+    (%make-processor :connection conn :queues queues :manager manager)))
 
 (defgeneric fetch-job (processor &key timeout)
   (:method ((processor processor) &key (timeout 5))
@@ -70,6 +80,7 @@
   (:method ((processor processor) &key (timeout 5))
     (vom:info "Starting...")
     (setf (processor-stopped-p processor) nil)
+    (ensure-connected (processor-connection processor))
     (setf (processor-thread processor)
           (bt:make-thread
            (lambda ()
@@ -85,6 +96,7 @@
       (return-from stop nil))
     (vom:info "Exiting...")
     (setf (processor-stopped-p processor) t)
+    (close-connection (processor-connection processor))
     t))
 
 (defgeneric kill (processor)
