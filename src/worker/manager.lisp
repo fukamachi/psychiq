@@ -7,7 +7,8 @@
   (:export #:manager
            #:make-manager
            #:start
-           #:stop))
+           #:stop
+           #:kill))
 (in-package :redqing.worker.manager)
 
 (defstruct (manager (:constructor %make-manager))
@@ -66,4 +67,12 @@
   (setf (manager-stopped-p manager) t)
   (vom:info "Terminating quiet workers")
   (map nil #'stop (manager-children manager))
+  t)
+
+(defmethod kill ((manager manager))
+  (when (manager-stopped-p manager)
+    (return-from kill nil))
+
+  (setf (manager-stopped-p manager) t)
+  (map nil #'kill (manager-children manager))
   t)
