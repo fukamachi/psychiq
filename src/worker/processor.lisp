@@ -6,7 +6,7 @@
                 #:connection-coder
                 #:make-connection
                 #:ensure-connected
-                #:close-connection
+                #:disconnect
                 #:with-redis-connection)
   (:import-from #:redqing.job
                 #:job
@@ -81,12 +81,13 @@
   (:method ((processor processor) &key (timeout 5))
     (vom:info "Starting...")
     (setf (processor-stopped-p processor) nil)
-    (ensure-connected (processor-connection processor))
     (setf (processor-thread processor)
           (bt:make-thread
            (lambda ()
+             (ensure-connected (processor-connection processor))
              (run processor :timeout timeout)
-             (setf (processor-thread processor) nil))
+             (setf (processor-thread processor) nil)
+             (disconnect (processor-connection processor)))
            :initial-bindings `((*standard-output* . ,*standard-output*))
            :name "redqing processor"))
     processor))
@@ -97,7 +98,7 @@
       (return-from stop nil))
     (vom:info "Exiting...")
     (setf (processor-stopped-p processor) t)
-    (close-connection (processor-connection processor))
+    (disconnect (processor-connection processor))
     t))
 
 (defgeneric kill (processor)
