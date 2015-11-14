@@ -70,6 +70,10 @@
         (processor-died manager processor))))
   (vom:info "Shutting down..."))
 
+(defmethod stop :after ((processor processor))
+  (when-let (manager (processor-manager processor))
+    (processor-stopped manager processor)))
+
 (defmethod start ((manager manager) &rest args &key timeout)
   (declare (ignore timeout))
   (setf (manager-stopped-p manager) nil)
