@@ -41,7 +41,10 @@
 (defun processor-stopped (manager processor)
   (bt:with-lock-held ((manager-lock manager))
     (setf (manager-children manager)
-          (delete processor (manager-children manager) :test #'eq))))
+          (delete processor (manager-children manager) :test #'eq))
+    (when (null (manager-children manager))
+      (setf (manager-stopped-p manager) t)))
+  (values))
 
 (defun processor-died (manager processor)
   (bt:with-lock-held ((manager-lock manager))
@@ -53,7 +56,8 @@
                               :queues (manager-queues manager)
                               :manager manager)))
         (push new-processor (manager-children manager))
-        (start new-processor)))))
+        (start new-processor))))
+  (values))
 
 (defmethod run :around ((processor processor) &key timeout)
   (declare (ignore timeout))
