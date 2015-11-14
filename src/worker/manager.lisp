@@ -2,6 +2,8 @@
 (defpackage redqing.worker.manager
   (:use #:cl
         #:redqing.worker.processor)
+  (:import-from #:alexandria
+                #:when-let)
   (:export #:manager
            #:make-manager
            #:start
@@ -45,18 +47,16 @@
   (declare (ignore timeout))
   (handler-case (call-next-method)
     (error ()
-      (processor-died (processor-manager processor) processor)))
+      (when-let (manager (processor-manager processor))
+        (processor-died manager processor))))
   (vom:info "Shutting down..."))
 
-(defmethod perform-job :around ((processor processor) job &rest args)
-  (handler-bind ((error
-                   (lambda (condition)
-                     (vom:warn "Job ~A ~S failed with ~A" job args condition))))
-    (call-next-method)))
-
-(defmethod start ((manager manager))
+(defmethod start ((manager manager) &rest args &key timeout)
+  (declare (ignore timeout))
   (setf (manager-stopped-p manager) nil)
-  (map nil #'start (manager-children manager))
+  (map nil (lambda (processor)
+             (apply #'start processor args))
+       (manager-children manager))
   manager)
 
 (defmethod stop ((manager manager))

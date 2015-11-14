@@ -5,7 +5,8 @@
         #:redqing.worker.processor)
   (:shadowing-import-from #:redqing.worker.processor
                           #:run
-                          #:decode-job)
+                          #:decode-job
+                          #:processor-thread)
   (:import-from #:redqing.connection
                 #:connect
                 #:disconnect
@@ -54,6 +55,33 @@
              (ok job-info "Can fetch-job")
              (is-type (decode-job job-info) 'deferred-job
                       "Can decode-job")))
+      (disconnect conn))))
+
+(subtest "start, stop & kill"
+  (let ((conn (connect :host "localhost" :port 6379)))
+    (unwind-protect
+         (progn
+           (let ((processor
+                    (make-processor :connection conn
+                                    :queues '("test"))))
+             (diag "start")
+             (start processor :timeout 1)
+             (is (processor-stopped-p processor) nil)
+             (ok (bt:thread-alive-p (processor-thread processor)))
+             (diag "stop")
+             (stop processor)
+             (sleep 2)
+             (is (processor-stopped-p processor) t)
+             (is (processor-thread processor) nil)
+
+             (diag "kill")
+             (start processor :timeout 5)
+             (is (processor-stopped-p processor) nil)
+             (ok (bt:thread-alive-p (processor-thread processor)))
+             (kill processor)
+             (sleep 1)
+             (is (processor-stopped-p processor) t)
+             (is (processor-thread processor) nil)))
       (disconnect conn))))
 
 (finalize)

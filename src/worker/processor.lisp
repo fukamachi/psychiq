@@ -59,14 +59,15 @@
                (process-job processor job-info)
                (vom:debug "Timed out after ~D seconds" timeout))))))
 
-(defgeneric start (processor)
-  (:method ((processor processor))
+(defgeneric start (processor &key timeout)
+  (:method ((processor processor) &key (timeout 5))
     (vom:info "Starting...")
     (setf (processor-stopped-p processor) nil)
     (setf (processor-thread processor)
           (bt:make-thread
            (lambda ()
-             (run processor))
+             (run processor)
+             (setf (processor-thread processor) nil))
            :initial-bindings `((*standard-output* . ,*standard-output*))
            :name "redqing processor"))
     processor))
@@ -110,4 +111,7 @@
 (defgeneric perform-job (processor job &rest args)
   (:method ((processor processor) job &rest args)
     (declare (ignore processor))
-    (apply #'perform job args)))
+    (handler-bind ((error
+                     (lambda (condition)
+                       (vom:warn "Job ~A ~S failed with ~A" job args condition))))
+      (apply #'perform job args))))
