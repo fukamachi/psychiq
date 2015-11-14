@@ -48,4 +48,4 @@ Options:
     (uiop:quit -1))
 
   (let ((args (parse-args args)))
-    (apply #'redqing.worker:run args)))
+    (redqing.worker:wait-for-processors (apply #'redqing.worker:run args))))
