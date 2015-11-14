@@ -2,6 +2,8 @@
 (defpackage redqing.worker.manager
   (:use #:cl
         #:redqing.worker.processor)
+  (:import-from #:redqing.connection
+                #:disconnect)
   (:import-from #:alexandria
                 #:when-let)
   (:export #:manager
@@ -47,6 +49,7 @@
 
 (defun processor-died (manager processor)
   (bt:with-lock-held ((manager-lock manager))
+    (disconnect (processor-connection processor))
     (setf (manager-children manager)
           (delete processor (manager-children manager) :test #'eq))
     (unless (manager-stopped-p manager)

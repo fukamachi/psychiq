@@ -23,9 +23,8 @@
              "DISCONNECT returns 'CONNECTION'")
     (ok (not (connectedp conn))
         "Connection is closed")
-    (is-error (disconnect conn)
-              'simple-error
-              "Cannot close a closed connection")
+    (is (disconnect conn) nil
+        "Don't raise an error when closing a closed connection")
 
     (ok (connectedp (reconnect conn))
         "Can RECONNECT a disconnected connection")

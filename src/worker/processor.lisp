@@ -19,6 +19,7 @@
            #:make-processor
            #:processor-stopped-p
            #:processor-manager
+           #:processor-connection
            #:run
            #:start
            #:stop

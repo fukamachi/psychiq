@@ -86,7 +86,8 @@
       (open-connection conn)))
 
 (defun disconnect (conn)
-  (close-connection conn))
+  (when (connectedp conn)
+    (close-connection conn)))
 
 (defun reconnect (conn)
   (if (connectedp conn)
