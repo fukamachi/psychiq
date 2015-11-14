@@ -84,10 +84,13 @@
     (setf (processor-thread processor)
           (bt:make-thread
            (lambda ()
-             (ensure-connected (processor-connection processor))
-             (run processor :timeout timeout)
-             (setf (processor-thread processor) nil)
-             (disconnect (processor-connection processor)))
+             (unwind-protect
+                  (progn
+                    (ensure-connected (processor-connection processor))
+                    (run processor :timeout timeout))
+               (setf (processor-thread processor) nil)
+               (disconnect (processor-connection processor))
+               (setf (processor-stopped-p processor) t)))
            :initial-bindings `((*standard-output* . ,*standard-output*))
            :name "redqing processor"))
     processor))
@@ -98,12 +101,12 @@
       (return-from stop nil))
     (vom:info "Exiting...")
     (setf (processor-stopped-p processor) t)
-    (disconnect (processor-connection processor))
     t))
 
 (defgeneric kill (processor)
   (:method ((processor processor))
-    (stop processor)
+    (when (processor-stopped-p processor)
+      (return-from kill nil))
     (let ((thread (processor-thread processor)))
       (when (and (bt:threadp thread)
                  (bt:thread-alive-p thread))
