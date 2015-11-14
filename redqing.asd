@@ -37,7 +37,9 @@
                    (:file "job")
                    (:file "queue" :depends-on ("connection"))
                    (:file "coder")))
-                 (:module "worker"
+                 (:file "worker" :depends-on ("worker-components"))
+                 (:module "worker-components"
+                  :pathname "worker"
                   :depends-on ("core" "redis")
                   :components
                   ((:file "processor")
