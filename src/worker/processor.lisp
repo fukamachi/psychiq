@@ -66,7 +66,7 @@
     (setf (processor-thread processor)
           (bt:make-thread
            (lambda ()
-             (run processor)
+             (run processor :timeout timeout)
              (setf (processor-thread processor) nil))
            :initial-bindings `((*standard-output* . ,*standard-output*))
            :name "redqing processor"))
