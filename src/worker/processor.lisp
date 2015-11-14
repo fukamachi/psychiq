@@ -91,7 +91,8 @@
                (setf (processor-thread processor) nil)
                (stop processor)
                (disconnect (processor-connection processor))))
-           :initial-bindings `((*standard-output* . ,*standard-output*))
+           :initial-bindings `((*standard-output* . ,*standard-output*)
+                               (*error-output* . ,*error-output*))
            :name "redqing processor"))
     processor))
 
