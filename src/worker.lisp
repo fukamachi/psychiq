@@ -10,11 +10,12 @@
            #:kill))
 (in-package :redqing.worker)
 
-(defun run (queue-or-queues &key (host "localhost") (port 6379) (concurrency 25) (timeout 5))
+(defun run (&key (host "localhost") (port 6379) (concurrency 25) (timeout 5)
+              (queue "default"))
   (redqing.worker.manager:start
    (make-manager :host host
                  :port port
-                 :queues (ensure-list queue-or-queues)
+                 :queues (ensure-list queue)
                  :count concurrency)
    :timeout timeout))
 

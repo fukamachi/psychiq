@@ -25,9 +25,9 @@
             (package-name package)
             (symbol-name symbol))))
 
-(defgeneric enqueue (connection queue job-class &optional args))
+(defgeneric enqueue (connection job-class &optional args queue))
 
-(defmethod enqueue ((conn connection) queue (job-class symbol) &optional args)
+(defmethod enqueue ((conn connection) (job-class symbol) &optional args (queue "default"))
   (let ((payload `(("class" . ,(symbol-name-with-package job-class))
                    ("args" . ,args)
                    ("jid" . ,(generate-random-id))

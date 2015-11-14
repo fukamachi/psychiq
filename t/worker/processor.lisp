@@ -41,7 +41,7 @@
            (with-redis-connection conn
              (red:del (redis-key "queue" "test")))
            ;; Enqueue a job
-           (enqueue conn "test" 'deferred-job))
+           (enqueue conn 'deferred-job nil "test"))
       (disconnect conn)))
   ;; Fetch a job
   (let* ((processor

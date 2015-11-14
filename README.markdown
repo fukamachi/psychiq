@@ -24,13 +24,13 @@ This software is still ALPHA quality. The APIs will be likely to change.
   ;; blah blah blah
   )
 
-(redq:enqueue *conn* "my-queue" 'deferred-job '("arg1" "arg2"))
+(redq:enqueue *conn* 'deferred-job '("arg1" "arg2"))
 ```
 
 ### Worker process
 
 ```common-lisp
-(redqing.worker:run '("my-queue") :host "localhost" :port 6379)
+(redqing.worker:run :host "localhost" :port 6379)
 ```
 
 ## Installation
