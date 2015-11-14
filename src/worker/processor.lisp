@@ -32,6 +32,13 @@
   (thread nil)
   (stopped-p t))
 
+(defmethod print-object ((processor processor) stream)
+  (print-unreadable-object (processor stream :type processor)
+    (with-slots (queues stopped-p) processor
+      (format stream "QUEUES: ~A / STATUS: ~:[RUNNING~;STOPPED~]"
+              queues
+              stopped-p))))
+
 (defgeneric fetch-job (processor &key timeout)
   (:method ((processor processor) &key (timeout 5))
     (let ((ret

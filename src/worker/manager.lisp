@@ -18,7 +18,18 @@
   (lock (bt:make-lock))
   (stopped-p t))
 
+(defmethod print-object ((manager manager) stream)
+  (print-unreadable-object (manager stream :type manager)
+    (with-slots (queues children stopped-p) manager
+      (format stream "QUEUES: ~A / COUNT: ~A / STATUS: ~:[RUNNING~;STOPPED~]"
+              queues
+              (length children)
+              stopped-p))))
+
 (defun make-manager (&key connection queues (count 25))
+  (unless (and (listp queues)
+               queues)
+    (error ":queues must be a list containing at least one queue name"))
   (let ((manager (%make-manager :connection connection :queues queues)))
     (setf (manager-children manager)
           (loop repeat count
