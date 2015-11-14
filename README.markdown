@@ -8,9 +8,41 @@
 
 Red Qing is a Redis-backed job queueing system written in Common Lisp.
 
+## Warning
+
+This software is still ALPHA quality. The APIs will be likely to change.
+
 ## Usage
 
+### Main application
+
+```common-lisp
+(defvar *conn* (redq:connect :host "localhost" :port 6379))
+
+(defclass deferred-job (redq:job) ())
+(defmethod redq:perform ((job deferred-job) &rest args)
+  ;; blah blah blah
+  )
+
+(redq:enqueue *conn* "my-queue" 'deferred-job '("arg1" "arg2"))
+```
+
+### Worker process
+
+```common-lisp
+(redqing.worker:run '("my-queue") :host "localhost" :port 6379)
+```
+
 ## Installation
+
+```
+cd ~/common-lisp
+git clone https://github.com/fukamachi/redqing
+```
+
+```common-lisp
+(ql:quickload :redqing)
+```
 
 ## Author
 
