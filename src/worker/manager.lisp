@@ -16,7 +16,7 @@
   port
   (queues '())
   (children '())
-  (lock (bt:make-lock))
+  (lock (bt:make-recursive-lock))
   (stopped-p t))
 
 (defmethod print-object ((manager manager) stream)
@@ -38,7 +38,7 @@
     manager))
 
 (defun processor-stopped (manager processor)
-  (bt:with-lock-held ((manager-lock manager))
+  (bt:with-recursive-lock-held ((manager-lock manager))
     (setf (manager-children manager)
           (delete processor (manager-children manager) :test #'eq))
     (when (null (manager-children manager))
@@ -46,8 +46,8 @@
   (values))
 
 (defun processor-died (manager processor)
-  (bt:with-lock-held ((manager-lock manager))
-    (kill processor)
+  (bt:with-recursive-lock-held ((manager-lock manager))
+    (stop processor)
     (setf (manager-children manager)
           (delete processor (manager-children manager) :test #'eq))
     (unless (manager-stopped-p manager)
