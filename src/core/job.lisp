@@ -48,7 +48,7 @@
 (defun decode-job (job-info)
   (let ((class (assoc "class" job-info :test #'string=))
         (args  (assoc "args"  job-info :test #'string=))
-        (jid (assoc "jid" job-info :test #'string=)))
+        (jid   (assoc "jid"   job-info :test #'string=)))
     (unless (and class args jid)
       (error "Invalid job: ~S" job-info))
     (let ((class (read-from-string (cdr class))))

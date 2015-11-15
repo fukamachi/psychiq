@@ -10,11 +10,11 @@
   (:import-from #:redqing.redis
                 #:with-transaction
                 #:redis-key)
+  (:import-from #:redqing.util.assoc
+                #:aget)
   (:import-from #:local-time
                 #:timestamp-to-unix
                 #:now)
-  (:import-from #:alexandria
-                #:nconcf)
   (:export #:enqueue-to-queue))
 (in-package :redqing.queue)
 
@@ -25,7 +25,7 @@
                      job-info)))
     (with-redis-connection conn
       (with-transaction
-        (nconcf job-info `(("enqueued_at" . ,(timestamp-to-unix (now)))))
+        (setf (aget job-info "enqueued_at") (timestamp-to-unix (now)))
         (red:sadd (redis-key "queues") queue)
         (red:rpush (redis-key "queue" queue)
                    (encode-to-payload job-info))))))

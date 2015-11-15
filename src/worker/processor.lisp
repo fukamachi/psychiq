@@ -15,6 +15,8 @@
                 #:redis-key)
   (:import-from #:redqing.coder
                 #:decode)
+  (:import-from #:redqing.util.assoc
+                #:aget)
   (:export #:processor
            #:make-processor
            #:processor-stopped-p
@@ -121,7 +123,7 @@
   (:method ((processor processor) queue job-info)
     (declare (ignore queue))
     (let ((job (decode-job job-info))
-          (args (cdr (assoc "args" job-info :test #'string=))))
+          (args (aget job-info "args")))
       (vom:info "got: ~A ~S" job args)
       (handler-bind ((error
                        (lambda (condition)
