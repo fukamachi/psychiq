@@ -79,7 +79,6 @@
 
 (defgeneric start (processor &key timeout)
   (:method ((processor processor) &key (timeout 5))
-    (vom:info "Starting...")
     (setf (processor-stopped-p processor) nil)
     (setf (processor-thread processor)
           (bt:make-thread
@@ -100,7 +99,6 @@
   (:method ((processor processor))
     (when (processor-stopped-p processor)
       (return-from stop nil))
-    (vom:info "Exiting...")
     (setf (processor-stopped-p processor) t)
     t))
 

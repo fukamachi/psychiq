@@ -51,6 +51,7 @@
     (setf (manager-children manager)
           (delete processor (manager-children manager) :test #'eq))
     (unless (manager-stopped-p manager)
+      (vom:debug "Adding a new processor...")
       (let ((new-processor
               (make-processor :host (manager-host manager)
                               :port (manager-port manager)
@@ -64,10 +65,10 @@
   (declare (ignore timeout))
   (handler-case (call-next-method)
     (error (e)
-      (vom:warn "Processor died with ~A: ~A" (class-of e) e)
+      (vom:warn "Processor died with ~S: ~A" (class-name (class-of e)) e)
       (when-let (manager (processor-manager processor))
         (processor-died manager processor))))
-  (vom:info "Shutting down..."))
+  (vom:debug "Shutting down a processor..."))
 
 (defmethod stop :after ((processor processor))
   (when-let (manager (processor-manager processor))
@@ -75,6 +76,7 @@
 
 (defmethod start ((manager manager) &rest args &key timeout)
   (declare (ignore timeout))
+  (vom:info "Starting...")
   (setf (manager-stopped-p manager) nil)
   (map nil (lambda (processor)
              (apply #'start processor args))
@@ -86,8 +88,9 @@
     (return-from stop nil))
 
   (setf (manager-stopped-p manager) t)
-  (vom:info "Terminating quiet workers")
+  (vom:info "Terminating quiet processors...")
   (map nil #'stop (manager-children manager))
+  (vom:info "Exiting...")
   t)
 
 (defmethod kill ((manager manager))
@@ -96,4 +99,5 @@
 
   (setf (manager-stopped-p manager) t)
   (map nil #'kill (manager-children manager))
+  (vom:info "Exiting...")
   t)
