@@ -64,17 +64,20 @@
       (if ret
           (destructuring-bind (queue payload) ret
             (vom:debug "Found job on ~A" queue)
-            (decode (connection-coder (processor-connection processor))
-                    payload))
+            (values
+             (decode (connection-coder (processor-connection processor))
+                     payload)
+             queue))
           nil))))
 
 (defgeneric run (processor &key timeout)
   (:method ((processor processor) &key (timeout 5))
     (loop
       until (processor-stopped-p processor)
-      do (let ((job-info (fetch-job processor :timeout timeout)))
+      do (multiple-value-bind (job-info queue)
+             (fetch-job processor :timeout timeout)
            (if job-info
-               (process-job processor job-info)
+               (process-job processor queue job-info)
                (vom:debug "Timed out after ~D seconds" timeout))))))
 
 (defgeneric start (processor &key timeout)
@@ -125,17 +128,18 @@
         (check-type job job)
         job))))
 
-(defgeneric process-job (processor job-info)
-  (:method ((processor processor) job-info)
+(defgeneric process-job (processor queue job-info)
+  (:method ((processor processor) queue job-info)
+    (declare (ignore queue))
     (let ((job (decode-job job-info))
           (args (cdr (assoc "args" job-info :test #'string=))))
       (vom:info "got: ~A ~S" job args)
-      (apply #'perform-job processor job args))))
+      (handler-bind ((error
+                       (lambda (condition)
+                         (vom:warn "Job ~A ~S failed with ~A" job args condition))))
+        (apply #'perform-job processor queue job args)))))
 
-(defgeneric perform-job (processor job &rest args)
-  (:method ((processor processor) job &rest args)
-    (declare (ignore processor))
-    (handler-bind ((error
-                     (lambda (condition)
-                       (vom:warn "Job ~A ~S failed with ~A" job args condition))))
-      (apply #'perform job args))))
+(defgeneric perform-job (processor queue job &rest args)
+  (:method ((processor processor) queue job &rest args)
+    (declare (ignore processor queue))
+    (apply #'perform job args)))
