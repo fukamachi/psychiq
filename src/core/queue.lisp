@@ -18,14 +18,14 @@
   (:export #:enqueue-to-queue))
 (in-package :redqing.queue)
 
-(defun enqueue-to-queue (conn queue payload)
+(defun enqueue-to-queue (conn queue job-info)
   (check-type conn connection)
-  (labels ((encode-payload (payload)
+  (labels ((encode-to-payload (job-info)
              (encode (connection-coder conn)
-                     payload)))
+                     job-info)))
     (with-redis-connection conn
       (with-transaction
-        (nconcf payload `(("enqueued_at" . ,(timestamp-to-unix (now)))))
+        (nconcf job-info `(("enqueued_at" . ,(timestamp-to-unix (now)))))
         (red:sadd (redis-key "queues") queue)
         (red:rpush (redis-key "queue" queue)
-                   (encode-payload payload))))))
+                   (encode-to-payload job-info))))))

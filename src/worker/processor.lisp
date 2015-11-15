@@ -9,8 +9,8 @@
                 #:disconnect
                 #:with-redis-connection)
   (:import-from #:redqing.job
-                #:job
-                #:perform)
+                #:perform
+                #:decode-job)
   (:import-from #:redqing.redis
                 #:redis-key)
   (:import-from #:redqing.coder
@@ -116,17 +116,6 @@
     (setf (processor-thread processor) nil)
     (setf (processor-stopped-p processor) t)
     t))
-
-(defun decode-job (job-info)
-  (let ((class (assoc "class" job-info :test #'string=))
-        (args  (assoc "args"  job-info :test #'string=)))
-    (unless (and class args)
-      (error "Invalid job: ~S" job-info))
-    (let ((class (read-from-string (cdr class))))
-      (check-type class symbol)
-      (let ((job (make-instance class :options job-info)))
-        (check-type job job)
-        job))))
 
 (defgeneric process-job (processor queue job-info)
   (:method ((processor processor) queue job-info)

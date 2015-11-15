@@ -8,7 +8,7 @@
                            :include '(#:connect #:disconnect #:reconnect #:with-redis-connection #:connectedp))
 
 (cl-reexport:reexport-from :redqing.job
-                           :include '(#:job #:job-options #:perform))
+                           :include '(#:job #:job-id #:job-options #:perform #:encode-job))
 
 (cl-reexport:reexport-from :redqing.client
                            :include '(#:enqueue))
