@@ -1,6 +1,8 @@
 (in-package :cl-user)
 (defpackage redqing.job
   (:use #:cl)
+  (:import-from #:redqing.util
+                #:symbol-name-with-package)
   (:import-from #:local-time
                 #:timestamp-to-unix
                 #:now)
@@ -17,14 +19,6 @@
 
 (defun generate-random-id (&optional (length 12))
   (format nil "~(~36,8,'0R~)" (random (expt 36 length))))
-
-(defun symbol-name-with-package (symbol)
-  (let ((package (symbol-package symbol)))
-    (unless package
-      (error "Uninterned symbol is not allowed"))
-    (format nil "~A::~A"
-            (package-name package)
-            (symbol-name symbol))))
 
 (defclass job ()
   ((id :initarg :id

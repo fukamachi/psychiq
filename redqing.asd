@@ -48,7 +48,8 @@
                (:module "util"
                 :pathname "src/util"
                 :components
-                ((:file "assoc"))))
+                ((:file "util")
+                 (:file "assoc"))))
   :description "Redis-backed job queueing system"
   :long-description
   #.(with-open-file (stream (merge-pathnames
