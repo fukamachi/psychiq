@@ -2,6 +2,8 @@
 (defpackage redqing.coder
   (:use #:cl)
   (:import-from #:jonathan
+                #:*false-value*
+                #:*null-value*
                 #:to-json
                 #:parse)
   (:export #:coder
@@ -29,4 +31,6 @@
   (jojo:to-json object :from :alist))
 
 (defmethod decode ((coder json-coder) payload)
-  (jojo:parse payload :as :alist))
+  (let ((jojo:*false-value* :false)
+        (jojo:*null-value* :null))
+    (jojo:parse payload :as :alist)))
