@@ -4,9 +4,12 @@
   (:import-from #:local-time
                 #:timestamp-to-unix
                 #:now)
+  (:import-from #:alexandria
+                #:nconcf)
   (:export #:job
            #:job-id
            #:job-options
+           #:additional-options
            #:perform
            #:encode-job
            #:decode-job))
@@ -30,6 +33,13 @@
    (options :initarg :options
             :initform `(("created_at" . ,(timestamp-to-unix (now))))
             :accessor job-options)))
+
+(defgeneric additional-options (job)
+  (:method ((job job)) '()))
+
+(defmethod initialize-instance :after ((job job) &rest initargs)
+  (declare (ignore initargs))
+  (nconcf (job-options job) (additional-options job)))
 
 (defgeneric perform (job &rest args)
   (:method ((job job) &rest args)
