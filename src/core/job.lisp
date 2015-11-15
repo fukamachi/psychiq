@@ -2,10 +2,14 @@
 (defpackage redqing.job
   (:use #:cl)
   (:export #:job
+           #:job-options
            #:perform))
 (in-package :redqing.job)
 
-(defclass job () ())
+(defclass job ()
+  ((options :initarg :options
+            :initform '()
+            :accessor job-options)))
 
 (defgeneric perform (job &rest args)
   (:method ((job job) &rest args)

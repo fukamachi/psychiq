@@ -124,7 +124,7 @@
       (error "Invalid job: ~S" job-info))
     (let ((class (read-from-string (cdr class))))
       (check-type class symbol)
-      (let ((job (make-instance class)))
+      (let ((job (make-instance class :options job-info)))
         (check-type job job)
         job))))
 
