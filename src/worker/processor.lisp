@@ -3,7 +3,6 @@
   (:use #:cl)
   (:import-from #:redqing.connection
                 #:connection
-                #:connection-coder
                 #:make-connection
                 #:ensure-connected
                 #:disconnect
@@ -14,7 +13,7 @@
   (:import-from #:redqing.redis
                 #:redis-key)
   (:import-from #:redqing.coder
-                #:decode)
+                #:decode-object)
   (:import-from #:redqing.util.assoc
                 #:aget)
   (:export #:processor
@@ -67,8 +66,7 @@
           (destructuring-bind (queue payload) ret
             (vom:debug "Found job on ~A" queue)
             (values
-             (decode (connection-coder (processor-connection processor))
-                     payload)
+             (decode-object payload)
              queue))
           nil))))
 

@@ -6,31 +6,14 @@
                 #:*null-value*
                 #:to-json
                 #:parse)
-  (:export #:coder
-           #:encode
-           #:decode
-
-           #:json-coder))
+  (:export #:encode-object
+           #:decode-object))
 (in-package :redqing.coder)
 
-(defclass coder () ())
-
-(defgeneric encode (coder object)
-  (:documentation "Encode a given object, typically an association list."))
-(defgeneric decode (coder payload)
-  (:documentation "Decode a given payload which was encoded by ENCODE."))
-
-
-;;
-;; JSON coder
-
-(defclass json-coder (coder) ())
-
-(defmethod encode ((coder json-coder) object)
-  (declare (ignore coder))
+(defun encode-object (object)
   (jojo:to-json object :from :alist))
 
-(defmethod decode ((coder json-coder) payload)
+(defun decode-object (payload)
   (let ((jojo:*false-value* :false)
         (jojo:*null-value* :null))
     (jojo:parse payload :as :alist)))

@@ -34,9 +34,9 @@
                  (:module "core"
                   :depends-on ("redis")
                   :components
-                  ((:file "connection" :depends-on ("coder"))
+                  ((:file "connection")
                    (:file "job")
-                   (:file "queue" :depends-on ("connection"))
+                   (:file "queue" :depends-on ("connection" "coder"))
                    (:file "coder")))
                  (:file "worker" :depends-on ("worker-components"))
                  (:module "worker-components"

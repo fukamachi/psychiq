@@ -1,8 +1,6 @@
 (in-package :cl-user)
 (defpackage redqing.connection
   (:use #:cl)
-  (:import-from #:redqing.coder
-                #:json-coder)
   (:import-from #:alexandria
                 #:when-let
                 #:once-only)
@@ -15,7 +13,6 @@
 
            ;; Connection APIs
            #:connection
-           #:connection-coder
            #:open-connection
            #:close-connection
            #:connectedp))
@@ -30,11 +27,7 @@
          :initform 6379)
    (redis :type (or redis:redis-connection null)
           :initform nil
-          :accessor redis-connection)
-   (coder :type coder
-          :initarg :coder
-          :initform (make-instance 'json-coder)
-          :accessor connection-coder)))
+          :accessor redis-connection)))
 
 (defmethod print-object ((conn connection) stream)
   (print-unreadable-object (conn stream :type conn)
