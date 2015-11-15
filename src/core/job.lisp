@@ -28,7 +28,7 @@
        :initform (generate-random-id)
        :accessor job-id)
    (options :initarg :options
-            :initform '()
+            :initform `(("created_at" . ,(timestamp-to-unix (now))))
             :accessor job-options)))
 
 (defgeneric perform (job &rest args)
@@ -42,7 +42,6 @@
       `(("class" . ,(symbol-name-with-package job-class))
         ("args" . ,args)
         ("jid" . ,(job-id job))
-        ("created_at" . ,(timestamp-to-unix (now)))
         ,@(job-options job)))))
 
 (defun decode-job (job-info)
@@ -51,9 +50,14 @@
         (jid   (assoc "jid"   job-info :test #'string=)))
     (unless (and class args jid)
       (error "Invalid job: ~S" job-info))
+    (setf job-info
+          (delete-if (lambda (record)
+                       (find (car record) '("class" "args" "jid") :test #'string=))
+                     job-info))
     (let ((class (read-from-string (cdr class))))
       (check-type class symbol)
-      (let ((job (make-instance class :id jid
-                                      :options job-info)))
+      (let ((job (make-instance class
+                                :id jid
+                                :options job-info)))
         (check-type job job)
         job))))
