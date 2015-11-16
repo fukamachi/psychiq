@@ -5,48 +5,59 @@ exec ros -Q -- $0 "$@"
 
 (ql:quickload '(:redqing :uiop) :silent t)
 
-(defun starts-with (x starts)
-  (and (<= (length starts) (length x))
-       (string= x starts :end1 (length starts))))
+(defun print-usage ()
+  (format *error-output* "~&Usage: redqing [option...]
+
+Options:
+    -o, --host HOST           Redis server host
+    -p, --port PORT           Redis server port
+    -q, --queue QUEUE         Queues to process (Can be specified multiple times)
+    -c, --concurrency INT     Processor threads to use
+    -h, --help                Show help
+")
+  (uiop:quit -1))
+
+(defmacro case-option (keyform &body cases)
+  (let ((g-keyform (gensym "KEYFORM")))
+    `(let ((,g-keyform ,keyform))
+       (cond
+         ,@(loop for (case . body) in cases
+                 if (eq case 'otherwise)
+                   collect `(t ,@body)
+                 else
+                   collect `((find ,g-keyform ',(if (listp case)
+                                                    case
+                                                    (list case))
+                                   :test #'equal)
+                             ,@body))))))
 
 (defun parse-args (args)
   (let (new-args)
     (flet ((add-option (k v)
              (setf new-args (nconc new-args (list k v)))))
-      (loop with queues = ()
+      (loop with queues = (list "default")
             for option = (pop args)
-            for value = (pop args)
             while option
-            if (string-equal option "--host") do
-              (add-option :host value)
-            else if (string-equal option "--port") do
-              (add-option :port (parse-integer value))
-            else if (string-equal option "--queue") do
-              (push value queues)
-            else if (string-equal option "--concurrency") do
-              (add-option :concurrency (parse-integer value))
-            else
-              do (error "Invalid option: ~A" option)
+            do (case-option option
+                 (("-o" "--host")
+                  (add-option :host (pop args)))
+                 (("-p" "--port")
+                  (add-option :port (parse-integer (pop args))))
+                 (("-c" "--concurrency")
+                  (add-option :concurrency (parse-integer (pop args))))
+                 (("-q" "--queue")
+                  (push (pop args) queues))
+                 (("-h" "--help")
+                  (print-usage))
+                 (otherwise
+                  (warn "Invalid option: ~A" option)
+                  (print-usage)))
             finally
                (when queues
-                 (add-option :queue queues))))
+                 (add-option :queue (nreverse queues)))))
     new-args))
 
-(defun print-usage ()
-  (format t "~&Usage: redqing [option...]
-
-Options:
-    --host HOST           Redis server host
-    --port PORT           Redis server port
-    --queue QUEUE         Queues to process (Can be specified multiple times)
-    --concurrency INT     Processor threads to use
-"))
-
 (defun main (&rest args)
-  (when (equalp args '("--help"))
-    (print-usage)
-    (uiop:quit -1))
-
   (vom:config t :info)
   (let ((args (parse-args args)))
     (redqing.worker:wait-for-processors (apply #'redqing.worker:run args))))
