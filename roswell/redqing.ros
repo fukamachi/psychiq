@@ -66,4 +66,9 @@ Options:
 (defun main (&rest args)
   (vom:config t :info)
   (let ((args (parse-args args)))
+    (format *error-output*
+            "~&Starting a worker (concurrency=~A) with Redis (~A:~A)...~%"
+            (getf args :concurrency 25)
+            (getf args :host "localhost")
+            (getf args :port 6379))
     (redqing.worker:wait-for-processors (apply #'redqing.worker:run args))))

@@ -76,7 +76,6 @@
 
 (defmethod start ((manager manager) &rest args &key timeout)
   (declare (ignore timeout))
-  (vom:info "Starting...")
   (setf (manager-stopped-p manager) nil)
   (map nil (lambda (processor)
              (apply #'start processor args))
