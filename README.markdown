@@ -33,6 +33,21 @@ This software is still ALPHA quality. The APIs will be likely to change.
 (redqing.worker:run :host "localhost" :port 6379)
 ```
 
+Red Qing provides a [Roswell](https://github.com/snmsts/roswell) script for starting a worker process:
+
+```
+$ redqing -h
+Usage: redqing [option...]
+
+Options:
+    -o, --host HOST           Redis server host
+    -p, --port PORT           Redis server port
+    -q, --queue QUEUE         Queues to process (Can be specified multiple times)
+    -c, --concurrency INT     Processor threads to use
+    -s, --system SYSTEM       ASDF system to load before starting
+    -h, --help                Show help
+```
+
 ## Installation
 
 ```
@@ -40,8 +55,8 @@ cd ~/common-lisp
 git clone https://github.com/fukamachi/redqing
 ```
 
-```common-lisp
-(ql:quickload :redqing)
+```
+$ ros install redqing
 ```
 
 ## Author
