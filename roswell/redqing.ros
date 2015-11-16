@@ -3,7 +3,7 @@
 exec ros -Q -- $0 "$@"
 |#
 
-(ql:quickload '(:redqing :uiop) :silent t)
+(ql:quickload '(:redqing :trivial-signal :uiop) :silent t)
 
 (defun print-usage ()
   (format *error-output* "~&Usage: redqing [option...]
@@ -63,6 +63,25 @@ Options:
                  (ql:quickload (nreverse systems)))))
     new-args))
 
+(defmacro with-handle-interrupt (int-handler &body body)
+  (let ((main (gensym "MAIN")))
+    `(flet ((,main () ,@body))
+       #+(or sbcl ccl clisp allegro ecl)
+       (handler-case
+           (let (#+ccl (ccl:*break-hook* (lambda (condition hook)
+                                           (declare (ignore hook))
+                                           (error condition))))
+             (,main))
+         (#+sbcl sb-sys:interactive-interrupt
+          #+ccl  ccl:interrupt-signal-condition
+          #+clisp system::simple-interrupt-condition
+          #+ecl ext:interactive-interrupt
+          #+allegro excl:interrupt-signal
+          ()
+           (funcall ,int-handler)))
+       #-(or sbcl ccl clisp allegro ecl)
+       (,main))))
+
 (defun main (&rest args)
   (vom:config t :info)
   (let ((args (parse-args args)))
@@ -71,4 +90,19 @@ Options:
             (getf args :concurrency 25)
             (getf args :host "localhost")
             (getf args :port 6379))
-    (redqing.worker:wait-for-processors (apply #'redqing.worker:run args))))
+
+    (let ((worker (apply #'redqing.worker:run args)))
+      (flet ((handle-sigint (signo)
+               (format *error-output*
+                       "~&~A~%"
+                       (trivial-signal:signal-name signo))
+               (redqing.worker:stop worker))
+             (handle-sigterm (signo)
+               (format *error-output*
+                       "~&~A~%"
+                       (trivial-signal:signal-name signo))
+               (redqing.worker:kill worker)))
+        (setf (trivial-signal:signal-handler :term) #'handle-sigterm)
+        (setf (trivial-signal:signal-handler :int)  #'handle-sigint)
+        (with-handle-interrupt (lambda () (handle-sigint trivial-signal:+sigint+))
+          (redqing.worker:wait-for-processors worker))))))
