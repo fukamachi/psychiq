@@ -43,5 +43,5 @@
   (redqing.scheduled:stop (worker-scheduled worker)))
 
 (defun kill (worker)
-  (redqing.worker.manager:kill worker)
+  (redqing.worker.manager:kill (worker-manager worker))
   (redqing.scheduled:kill (worker-scheduled worker)))
