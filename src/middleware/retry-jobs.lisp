@@ -30,7 +30,7 @@
       (handler-bind ((error
                        (lambda (e)
                          (attempt-retry conn queue job args e))))
-        (apply next job args)))))
+        (funcall next job args)))))
 
 (defun attempt-retry (conn queue job args e)
   (declare (ignore queue))
