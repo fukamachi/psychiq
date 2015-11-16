@@ -61,7 +61,7 @@
     (let ((class (read-from-string (cdr class))))
       (check-type class symbol)
       (let ((job (make-instance class
-                                :id jid
+                                :id (cdr jid)
                                 :options job-info)))
         (check-type job job)
         job))))
