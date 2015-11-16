@@ -13,6 +13,7 @@ Options:
     -p, --port PORT           Redis server port
     -q, --queue QUEUE         Queues to process (Can be specified multiple times)
     -c, --concurrency INT     Processor threads to use
+    -s, --system SYSTEM       ASDF system to load before starting
     -h, --help                Show help
 ")
   (uiop:quit -1))
@@ -36,6 +37,7 @@ Options:
     (flet ((add-option (k v)
              (setf new-args (nconc new-args (list k v)))))
       (loop with queues = (list "default")
+            with systems = '()
             for option = (pop args)
             while option
             do (case-option option
@@ -47,6 +49,8 @@ Options:
                   (add-option :concurrency (parse-integer (pop args))))
                  (("-q" "--queue")
                   (push (pop args) queues))
+                 (("-s" "--system")
+                  (push (pop args) systems))
                  (("-h" "--help")
                   (print-usage))
                  (otherwise
@@ -54,7 +58,9 @@ Options:
                   (print-usage)))
             finally
                (when queues
-                 (add-option :queue (nreverse queues)))))
+                 (add-option :queue (nreverse queues)))
+               (when systems
+                 (ql:quickload (nreverse systems)))))
     new-args))
 
 (defun main (&rest args)
