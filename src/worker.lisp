@@ -6,6 +6,8 @@
                 #:manager-children)
   (:import-from #:redqing.worker.processor
                 #:processor-thread)
+  (:import-from #:redqing.connection
+                #:make-connection)
   (:import-from #:alexandria
                 #:ensure-list)
   (:export #:run
@@ -14,6 +16,10 @@
            #:wait-for-processors))
 (in-package :redqing.worker)
 
+(defstruct worker
+  manager
+  scheduled)
+
 (defun run (&key (host "localhost") (port 6379) (concurrency 25) (timeout 5)
               (queue "default"))
   (let ((manager (make-manager :host host
@@ -21,15 +27,21 @@
                                :queues (ensure-list queue)
                                :count concurrency)))
     (redqing.worker.manager:start manager :timeout timeout)
-    manager))
+    (let* ((conn (make-connection :host host :port port))
+           (scheduled
+             (redqing.scheduled:make-scheduled :connection conn)))
+      (redqing.scheduled:start scheduled)
+      (make-worker :manager manager :scheduled scheduled))))
 
-(defun wait-for-processors (manager)
+(defun wait-for-processors (worker)
   (map nil #'bt:join-thread
        (mapcar #'processor-thread
-               (manager-children manager))))
+               (manager-children (worker-manager worker)))))
 
 (defun stop (worker)
-  (redqing.worker.manager:stop worker))
+  (redqing.worker.manager:stop (worker-manager worker))
+  (redqing.scheduled:stop (worker-scheduled worker)))
 
 (defun kill (worker)
-  (redqing.worker.manager:kill worker))
+  (redqing.worker.manager:kill worker)
+  (redqing.scheduled:kill (worker-scheduled worker)))

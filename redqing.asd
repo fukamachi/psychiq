@@ -41,10 +41,11 @@
                  (:file "worker" :depends-on ("worker-components"))
                  (:module "worker-components"
                   :pathname "worker"
-                  :depends-on ("core" "middleware" "redis")
+                  :depends-on ("core" "middleware" "redis" "scheduled")
                   :components
                   ((:file "processor")
                    (:file "manager" :depends-on ("processor"))))
+                 (:file "scheduled" :depends-on ("core"))
                  (:module "middleware"
                   :depends-on ("core" "redis")
                   :components
