@@ -41,10 +41,14 @@
                  (:file "worker" :depends-on ("worker-components"))
                  (:module "worker-components"
                   :pathname "worker"
-                  :depends-on ("core" "redis")
+                  :depends-on ("core" "middleware" "redis")
                   :components
                   ((:file "processor")
-                   (:file "manager" :depends-on ("processor"))))))
+                   (:file "manager" :depends-on ("processor"))))
+                 (:module "middleware"
+                  :depends-on ("core" "redis")
+                  :components
+                  ((:file "retry-jobs")))))
                (:module "util"
                 :pathname "src/util"
                 :components

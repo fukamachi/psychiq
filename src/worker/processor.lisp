@@ -10,6 +10,8 @@
   (:import-from #:redqing.job
                 #:perform
                 #:decode-job)
+  (:import-from #:redqing.middleware.retry-jobs
+                #:*redqing-middleware-retry-jobs*)
   (:import-from #:redqing.redis
                 #:redis-key)
   (:import-from #:redqing.coder
@@ -126,7 +128,12 @@
       (handler-bind ((error
                        (lambda (condition)
                          (vom:warn "Job ~A ~S failed with ~A" job args condition))))
-        (apply #'perform-job processor queue job args)))))
+        ;; Applying default middlewares
+        (funcall
+         (funcall *redqing-middleware-retry-jobs*
+                  (lambda (job args)
+                    (apply #'perform-job processor queue job args)))
+         (processor-connection processor) job queue args)))))
 
 (defgeneric perform-job (processor queue job &rest args)
   (:method ((processor processor) queue job &rest args)
