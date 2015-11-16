@@ -127,7 +127,8 @@
       (vom:info "got: ~A ~S" job args)
       (handler-bind ((error
                        (lambda (condition)
-                         (vom:warn "Job ~A ~S failed with ~A" job args condition))))
+                         (vom:warn "Job ~A ~S failed with ~S: ~A"
+                                   job args (class-name (class-of condition)) condition))))
         ;; Applying default middlewares
         (funcall
          (funcall *redqing-middleware-retry-jobs*
