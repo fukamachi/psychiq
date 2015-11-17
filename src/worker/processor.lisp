@@ -121,7 +121,6 @@
 
 (defgeneric process-job (processor queue job-info)
   (:method ((processor processor) queue job-info)
-    (declare (ignore queue))
     (let ((job (decode-job job-info))
           (args (aget job-info "args")))
       (vom:info "got: ~A ~S" job args)
