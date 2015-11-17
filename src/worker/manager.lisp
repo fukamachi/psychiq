@@ -97,6 +97,7 @@
     (return-from kill nil))
 
   (setf (manager-stopped-p manager) t)
-  (vom:info "Exiting...")
+  (vom:info "Terminating all processors...")
   (map nil #'kill (manager-children manager))
+  (vom:info "Exiting...")
   t)
