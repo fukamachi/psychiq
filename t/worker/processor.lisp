@@ -27,11 +27,16 @@
     (is-type processor 'processor
              "Can make a PROCESSOR")
     (ok (processor-stopped-p processor)
-        "PROCESSOR is stopped at first")))
+        "PROCESSOR is stopped at first")
+    (is (princ-to-string processor)
+        "#<PROCESSOR QUEUES: (test) / STATUS: STOPPED>")))
+
+(defparameter *perform-result* nil)
 
 (defclass deferred-job (job) ())
 (defmethod perform ((job deferred-job) &rest args)
-  (declare (ignore args)))
+  (declare (ignore args))
+  (setf *perform-result* t))
 
 (subtest "fetch-job & decode-job"
   (let ((conn (connect)))
@@ -72,5 +77,23 @@
     (sleep 1)
     (is (processor-stopped-p processor) t)
     (is (processor-thread processor) nil)))
+
+(subtest "perform"
+  (let ((conn (connect)))
+    (unwind-protect
+         (progn
+           ;; Clear
+           (with-redis-connection conn
+             (red:del (redis-key "queue" "test")))
+           ;; Enqueue a job
+           (enqueue conn 'deferred-job nil "test"))
+      (disconnect conn)))
+  (setf *perform-result* nil)
+  (let ((processor
+          (make-processor :queues '("test"))))
+    (start processor)
+    (sleep 0.5)
+    (is *perform-result* t)
+    (kill processor)))
 
 (finalize)

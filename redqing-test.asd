@@ -25,7 +25,11 @@
                  (:module "worker"
                   :components
                   ((:test-file "processor")
-                   (:test-file "manager"))))))
+                   (:test-file "manager")))
+                 (:module "util"
+                  :components
+                  ((:test-file "util")
+                   (:test-file "assoc"))))))
   :description "Test system for redqing"
 
   :defsystem-depends-on (:prove-asdf)
