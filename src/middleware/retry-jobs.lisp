@@ -4,11 +4,13 @@
   (:import-from #:redqing.connection
                 #:with-redis-connection)
   (:import-from #:redqing.job
+                #:job-id
                 #:job-options
                 #:encode-job)
   (:import-from #:redqing.coder
                 #:encode-object)
   (:import-from #:redqing.redis
+                #:with-transaction
                 #:redis-key)
   (:import-from #:redqing.util
                 #:symbol-name-with-package)
@@ -71,8 +73,31 @@
                          (princ-to-string retry-at)
                          payload)))))
         (t
-         ;; TODO: give up a job
-         )))))
+         (send-to-morgue job args))))))
 
 (defun delay-for (retry-count)
   (+ (expt retry-count 4) 15 (* (random 30) (1+ retry-count))))
+
+(defparameter *dead-timeout-in-seconds*
+  ;; 6 months
+  (* (* 24 60 60) 180))
+
+(defparameter *dead-max-jobs*
+  10000)
+
+(defun send-to-morgue (job args)
+  (vom:info "Adding dead ~S job ~S"
+            (class-name (class-of job))
+            (job-id job))
+  (let ((payload (encode-object (encode-job job args)))
+        (now (timestamp-to-unix (now))))
+    (with-transaction
+      (red:zadd (redis-key "dead")
+                now
+                payload)
+      (red:zremrangebyscore (redis-key "dead")
+                            "-inf"
+                            (- now *dead-timeout-in-seconds*))
+      (red:zremrangebyrank (redis-key "dead")
+                           0
+                           -10000))))
