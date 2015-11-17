@@ -5,16 +5,80 @@
         #:redqing.worker.manager)
   (:import-from #:redqing.worker.manager
                 #:manager-stopped-p)
+  (:import-from #:redqing.job
+                #:job
+                #:perform)
   (:import-from #:redqing.connection
+                #:with-redis-connection
                 #:connect
-                #:disconnect))
+                #:disconnect)
+  (:import-from #:redqing.redis
+                #:redis-key)
+  (:import-from #:redqing.client
+                #:enqueue)
+  (:import-from #:redqing.util.assoc
+                #:aget))
 (in-package :redqing-test.worker.manager)
 
-(plan nil)
+(plan 3)
 
 (subtest "make-manager"
   (let ((manager (make-manager :queues '("test"))))
     (is-type manager 'manager)
     (ok (manager-stopped-p manager))))
+
+(defparameter *perform-result* nil)
+(defclass deferred-job (job) ())
+
+(subtest "normal case"
+  (defmethod perform ((job deferred-job) &rest args)
+    (declare (ignore args))
+    (setf *perform-result* t)
+    "OK")
+  (let ((conn (connect)))
+    (unwind-protect
+         (progn
+           ;; Clear
+           (with-redis-connection conn
+             (red:del (redis-key "queue" "test")))
+           ;; Enqueue a job
+           (enqueue conn 'deferred-job nil "test"))
+      (disconnect conn)))
+  (setf *perform-result* nil)
+  (let ((manager (make-manager :queues '("test"))))
+    (start manager :timeout 1)
+    (sleep 1.2)
+    (is *perform-result* t)
+    (kill manager)))
+
+(subtest "processor died"
+  (defmethod perform ((job deferred-job) &rest args)
+    (declare (ignore args))
+    (error "Failed"))
+  (let ((conn (connect))
+        (manager (make-manager :queues '("test")))
+        job-info)
+    (unwind-protect
+         (progn
+           ;; Clear
+           (with-redis-connection conn
+             (red:del (redis-key "queue" "test"))
+             (red:del (redis-key "retry")))
+           ;; Enqueue a job
+           (setf job-info
+                 (enqueue conn 'deferred-job nil "test"))
+
+           (start manager :timeout 1)
+           (sleep 1.2)
+           (with-redis-connection conn
+             (let ((payloads
+                     (red:zrangebyscore (redis-key "retry")
+                                        "-inf"
+                                        (+ (local-time:timestamp-to-unix (local-time:now)) 60)
+                                        :limit '(0 . 1))))
+               (is (length payloads) 1)
+               (like (first payloads) (format nil "\"jid\":\"~A\"" (aget job-info "jid"))))))
+      (disconnect conn)
+      (kill manager))))
 
 (finalize)

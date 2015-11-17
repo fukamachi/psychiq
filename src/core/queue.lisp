@@ -24,4 +24,5 @@
       (setf (aget job-info "enqueued_at") (timestamp-to-unix (now)))
       (red:sadd (redis-key "queues") queue)
       (red:rpush (redis-key "queue" queue)
-                 (encode-object job-info)))))
+                 (encode-object job-info))))
+  job-info)
