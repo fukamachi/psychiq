@@ -77,7 +77,9 @@
                                         (+ (local-time:timestamp-to-unix (local-time:now)) 60)
                                         :limit '(0 . 1))))
                (is (length payloads) 1)
-               (like (first payloads) (format nil "\"jid\":\"~A\"" (aget job-info "jid"))))))
+               (like (first payloads) (format nil "\"jid\":\"~A\"" (aget job-info "jid")))))
+           (stop manager)
+           (sleep 1))
       (disconnect conn)
       (kill manager))))
 
