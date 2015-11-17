@@ -40,9 +40,10 @@
                    (progn
                      (ensure-connected conn)
                      (loop until (scheduled-stopped-p scheduled)
-                           do (handler-case (enqueue-jobs conn)
+                           do (handler-case (enqueue-jobs conn (timestamp-to-unix (now)))
                                 (error (e)
-                                  (vom:error "~A" e)))))
+                                  (vom:error "~A" e)))
+                              (sleep (scaled-poll-interval))))
                 (with-slots (stopped-p thread connection) scheduled
                   (setf stopped-p t)
                   (setf thread nil)
@@ -52,6 +53,13 @@
             :name "redqing scheduled")))
     (setf (scheduled-thread scheduled) thread))
   scheduled)
+
+(defun scaled-poll-interval ()
+  (let* ( ;; Should be changed to the number of Red Qing processes
+         (process-count 1)
+         (poll-interval-average (* process-count 2)))
+    (+ (* poll-interval-average (random 1.0))
+       (/ poll-interval-average 2))))
 
 (defun stop (scheduled)
   (with-slots (stopped-p thread connection) scheduled
@@ -66,12 +74,12 @@
     (setf thread nil)
     (disconnect connection)))
 
-(defun enqueue-jobs (conn)
+(defun enqueue-jobs (conn now)
   (with-redis-connection conn
     (loop for payload = (first
                          (red:zrangebyscore (redis-key "retry")
                                             "-inf"
-                                            (timestamp-to-unix (now))
+                                            now
                                             :limit '(0 . 1)))
           while payload
           do (red:zrem (redis-key "retry") payload)
