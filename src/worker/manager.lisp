@@ -84,9 +84,14 @@
   (vom:info "Exiting...")
   t)
 
-(defmethod kill ((manager manager))
+(defmethod kill ((manager manager) &optional (wait-p t))
   (setf (manager-stopped-p manager) t)
   (vom:info "Terminating all processors...")
-  (map nil #'kill (manager-children manager))
+  (map nil (lambda (p)
+             (kill p nil))
+       (manager-children manager))
+  (when wait-p
+    (map nil #'wait-processor-ends (manager-children manager))
+    (sleep 2))
   (vom:info "Exiting...")
   t)

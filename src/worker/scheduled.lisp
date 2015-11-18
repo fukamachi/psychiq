@@ -69,16 +69,16 @@
 
   (setf (scheduled-status scheduled) :stopping))
 
-(defun kill (scheduled)
+(defun kill (scheduled &optional (wait-p t))
   (setf (scheduled-status scheduled) :stopping)
   (let ((thread (scheduled-thread scheduled)))
     (when (and (bt:threadp thread)
                (bt:thread-alive-p thread))
       (bt:destroy-thread thread)
-      (loop while (or (bt:thread-alive-p thread)
-                      (not (eq (scheduled-status scheduled) :stopped)))
-            do (sleep 0.1))
-      (sleep 0.1)))
+      (when wait-p
+        (loop while (bt:thread-alive-p thread)
+              do (sleep 0.1))
+        (sleep 2))))
   t)
 
 (defun enqueue-jobs (now)

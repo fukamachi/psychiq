@@ -29,7 +29,8 @@
            #:finalize
            #:fetch-job
            #:process-job
-           #:perform-job))
+           #:perform-job
+           #:wait-processor-ends))
 (in-package :redqing.worker.processor)
 
 (defstruct (processor (:constructor %make-processor))
@@ -114,18 +115,24 @@
     (setf (processor-status processor) :stopping)
     t))
 
-(defgeneric kill (processor)
-  (:method ((processor processor))
+(defgeneric kill (processor &optional wait-p)
+  (:method ((processor processor) &optional (wait-p t))
     (setf (processor-status processor) :stopping)
     (let ((thread (processor-thread processor)))
       (when (and (bt:threadp thread)
                  (bt:thread-alive-p thread))
         (bt:destroy-thread thread)
-        (loop while (or (bt:thread-alive-p thread)
-                        (not (eq (processor-status processor) :stopped)))
-              do (sleep 0.1))
-        (sleep 0.1)))
+        (when wait-p
+          (wait-processor-ends processor)
+          (sleep 2))))
     t))
+
+(defun wait-processor-ends (processor)
+  (let ((thread (processor-thread processor)))
+    (when (and (bt:threadp thread)
+               (bt:thread-alive-p thread))
+      (loop while (bt:thread-alive-p thread)
+            do (sleep 0.1)))))
 
 (defgeneric process-job (processor queue job-info)
   (:method ((processor processor) queue job-info)
