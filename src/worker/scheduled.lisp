@@ -78,7 +78,7 @@
       (when wait
         (loop while (bt:thread-alive-p thread)
               do (sleep 0.1))
-        (sleep 2))))
+        (sleep 3))))
   t)
 
 (defun enqueue-jobs (now)

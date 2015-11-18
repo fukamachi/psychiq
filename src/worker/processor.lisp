@@ -124,7 +124,7 @@
         (bt:destroy-thread thread)
         (when wait
           (wait-processor-ends processor)
-          (sleep 2))))
+          (sleep 3))))
     t))
 
 (defun wait-processor-ends (processor)

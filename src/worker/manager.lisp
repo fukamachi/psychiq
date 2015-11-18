@@ -93,7 +93,7 @@
        (manager-children manager))
   (when wait
     (wait-manager-ends manager)
-    (sleep 2))
+    (sleep 3))
   (vom:info "Exiting...")
   t)
 
