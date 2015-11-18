@@ -1,5 +1,5 @@
 (in-package :cl-user)
-(defpackage redqing.scheduled
+(defpackage redqing.worker.scheduled
   (:use #:cl)
   (:import-from #:redqing.connection
                 #:with-redis-connection
@@ -23,7 +23,7 @@
            #:stop
            #:kill
            #:make-scheduled))
-(in-package :redqing.scheduled)
+(in-package :redqing.worker.scheduled)
 
 (defstruct (scheduled (:constructor %make-scheduled))
   connection

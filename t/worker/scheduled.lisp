@@ -1,14 +1,14 @@
 (in-package :cl-user)
-(defpackage redqing.scheduled
+(defpackage redqing-test.worker.scheduled
   (:use #:cl
         #:prove
-        #:redqing.scheduled)
-  (:import-from #:redqing.scheduled
+        #:redqing.worker.scheduled)
+  (:import-from #:redqing.worker.scheduled
                 #:scheduled-thread
                 #:enqueue-jobs)
   (:import-from #:redqing.connection
                 #:connect))
-(in-package :redqing.scheduled)
+(in-package :redqing-test.worker.scheduled)
 
 (plan 3)
 

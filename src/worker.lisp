@@ -27,9 +27,9 @@
                                :queues (ensure-list queue)
                                :count concurrency))
         (scheduled
-          (redqing.scheduled:make-scheduled :host host :port)))
+          (redqing.worker.scheduled:make-scheduled :host host :port)))
     (redqing.worker.manager:start manager :timeout timeout)
-    (redqing.scheduled:start scheduled)
+    (redqing.worker.scheduled:start scheduled)
     (make-worker :manager manager :scheduled scheduled)))
 
 (defun wait-for-processors (worker)
@@ -39,8 +39,8 @@
 
 (defun stop (worker)
   (redqing.worker.manager:stop (worker-manager worker))
-  (redqing.scheduled:stop (worker-scheduled worker)))
+  (redqing.worker.scheduled:stop (worker-scheduled worker)))
 
 (defun kill (worker)
   (redqing.worker.manager:kill (worker-manager worker))
-  (redqing.scheduled:kill (worker-scheduled worker)))
+  (redqing.worker.scheduled:kill (worker-scheduled worker)))
