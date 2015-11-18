@@ -19,7 +19,8 @@ install:
   - curl -L https://raw.githubusercontent.com/snmsts/roswell/$ROSWELL_BRANCH/scripts/install-for-ci.sh | sh
   - ros -e '(ql:update-all-dists :prompt nil)'
   - git clone -b dexador https://github.com/fukamachi/cl-coveralls ~/lisp/cl-coveralls
-  - ros install prove
+  - git clone -b fix-run-test-system https://github.com/fukamachi/prove ~/lisp/prove
+  - ros -l ~/lisp/prove/prove.asd install prove
 
 cache:
   directories:
