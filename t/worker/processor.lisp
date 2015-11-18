@@ -44,9 +44,9 @@
          (progn
            ;; Clear
            (with-connection conn
-             (red:del (redis-key "queue" "test")))
-           ;; Enqueue a job
-           (enqueue conn 'deferred-job nil "test"))
+             (red:del (redis-key "queue" "test"))
+             ;; Enqueue a job
+             (enqueue 'deferred-job nil "test")))
       (disconnect conn)))
   ;; Fetch a job
   (let* ((processor
@@ -84,9 +84,9 @@
          (progn
            ;; Clear
            (with-connection conn
-             (red:del (redis-key "queue" "test")))
-           ;; Enqueue a job
-           (enqueue conn 'deferred-job nil "test"))
+             (red:del (redis-key "queue" "test"))
+             ;; Enqueue a job
+             (enqueue 'deferred-job nil "test")))
       (disconnect conn)))
   (setf *perform-result* nil)
   (let ((processor

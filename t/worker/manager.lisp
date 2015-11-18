@@ -40,9 +40,9 @@
          (progn
            ;; Clear
            (with-connection conn
-             (red:del (redis-key "queue" "test")))
-           ;; Enqueue a job
-           (enqueue conn 'deferred-job nil "test"))
+             (red:del (redis-key "queue" "test"))
+             ;; Enqueue a job
+             (enqueue 'deferred-job nil "test")))
       (disconnect conn)))
   (setf *perform-result* nil)
   (let ((manager (make-manager :queues '("test"))))
@@ -63,10 +63,10 @@
            ;; Clear
            (with-connection conn
              (red:del (redis-key "queue" "test"))
-             (red:del (redis-key "retry")))
-           ;; Enqueue a job
-           (setf job-info
-                 (enqueue conn 'deferred-job nil "test"))
+             (red:del (redis-key "retry"))
+             ;; Enqueue a job
+             (setf job-info
+                   (enqueue 'deferred-job nil "test")))
 
            (start manager :timeout 1)
            (sleep 1.2)

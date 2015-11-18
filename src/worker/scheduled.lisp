@@ -6,7 +6,6 @@
   (:import-from #:redqing.connection
                 #:with-connection
                 #:make-connection
-                #:ensure-connected
                 #:disconnect)
   (:import-from #:redqing.queue
                 #:enqueue-to-queue)
@@ -42,13 +41,12 @@
            (bt:make-thread
             (lambda ()
               (unwind-protect
-                   (progn
-                     (ensure-connected conn)
-                     (loop until (scheduled-stopped-p scheduled)
-                           do (handler-case (enqueue-jobs conn (timestamp-to-unix (now)))
-                                (error (e)
-                                  (vom:error "~A" e)))
-                              (sleep (scaled-poll-interval))))
+                   (loop until (scheduled-stopped-p scheduled)
+                         do (handler-case (with-connection conn
+                                            (enqueue-jobs (timestamp-to-unix (now))))
+                              (error (e)
+                                (vom:error "~A" e)))
+                            (sleep (scaled-poll-interval)))
                 (with-slots (stopped-p thread connection) scheduled
                   (setf stopped-p t)
                   (setf thread nil)
@@ -79,16 +77,15 @@
     (setf thread nil)
     (disconnect connection)))
 
-(defun enqueue-jobs (conn now)
-  (with-connection conn
-    (loop for payload = (first
-                         (red:zrangebyscore (redis-key "retry")
-                                            "-inf"
-                                            now
-                                            :limit '(0 . 1)))
-          while payload
-          do (red:zrem (redis-key "retry") payload)
-             (let* ((job-info (decode-object payload))
-                    (queue (or (aget job-info "queue") *default-queue-name*)))
-               (enqueue-to-queue conn queue job-info)
-               (vom:debug "Enqueued to ~A: ~S" queue job-info)))))
+(defun enqueue-jobs (now)
+  (loop for payload = (first
+                       (red:zrangebyscore (redis-key "retry")
+                                          "-inf"
+                                          now
+                                          :limit '(0 . 1)))
+        while payload
+        do (red:zrem (redis-key "retry") payload)
+           (let* ((job-info (decode-object payload))
+                  (queue (or (aget job-info "queue") *default-queue-name*)))
+             (enqueue-to-queue queue job-info)
+             (vom:debug "Enqueued to ~A: ~S" queue job-info))))

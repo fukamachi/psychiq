@@ -12,6 +12,8 @@
            #:ensure-connected
            #:make-connection
            #:with-connection
+           #:connect-toplevel
+           #:disconnect-toplevel
 
            ;; Connection APIs
            #:connection
@@ -90,3 +92,14 @@
   (if (connectedp conn)
       (open-connection (close-connection conn))
       (open-connection conn)))
+
+(defun connect-toplevel (&rest initargs &key host port)
+  (when (and (boundp '*connection*)
+             *connection*)
+    (cerror "*connection* is already bound to ~A" *connection*))
+  (setf *connection* (apply #'connect initargs)))
+
+(defun disconnect-toplevel ()
+  (when (boundp '*connection*)
+    (disconnect *connection*)
+    (makunbound '*connection*)))

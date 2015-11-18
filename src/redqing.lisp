@@ -7,6 +7,7 @@
 (cl-reexport:reexport-from :redqing.connection
                            :include '(#:*connection*
                                       #:connection
+                                      #:connect-toplevel #:disconnect-toplevel
                                       #:connect #:disconnect #:reconnect #:ensure-connected
                                       #:with-connection #:connectedp))
 

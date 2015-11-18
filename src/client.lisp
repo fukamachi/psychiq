@@ -2,8 +2,6 @@
 (defpackage redqing.client
   (:use #:cl
         #:redqing.specials)
-  (:import-from #:redqing.connection
-                #:connection)
   (:import-from #:redqing.job
                 #:encode-job)
   (:import-from #:redqing.queue
@@ -11,10 +9,9 @@
   (:export #:enqueue))
 (in-package :redqing.client)
 
-(defgeneric enqueue (connection job-class &optional args queue))
+(defgeneric enqueue (job-class &optional args queue))
 
-(defmethod enqueue ((conn connection) (job-class symbol) &optional args (queue *default-queue-name*))
+(defmethod enqueue ((job-class symbol) &optional args (queue *default-queue-name*))
   (let ((job-info (encode-job (make-instance job-class) args)))
-    (enqueue-to-queue conn
-                      queue
+    (enqueue-to-queue queue
                       job-info)))

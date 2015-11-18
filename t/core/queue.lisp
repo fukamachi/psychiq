@@ -12,13 +12,13 @@
   (unwind-protect
        (progn
          (with-connection conn
-           (red:del "redqing:queue:test"))
-         (ok (enqueue-to-queue conn
-                               "test"
-                               `(("class" . "test-job")
-                                 ("args" . ("12"))
-                                 ("jid" . "9hrm7ofvc44u")))
-             "Can enqueue"))
+           (red:del "redqing:queue:test")
+           (ok (enqueue-to-queue
+                "test"
+                `(("class" . "test-job")
+                  ("args" . ("12"))
+                  ("jid" . "9hrm7ofvc44u")))
+               "Can enqueue")))
     (disconnect conn)))
 
 (finalize)
