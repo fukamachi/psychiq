@@ -92,8 +92,7 @@
              (kill p nil))
        (manager-children manager))
   (when wait
-    (wait-manager-ends manager)
-    (sleep 3))
+    (wait-manager-ends manager))
   (vom:info "Exiting...")
   t)
 
