@@ -23,8 +23,6 @@
 
 (plan 5)
 
-(defvar *threads* (bt:all-threads))
-
 (subtest "processor"
   (let ((processor (make-processor :queues '("test"))))
     (is-type processor 'processor
@@ -61,9 +59,9 @@
 
 (subtest "start, stop & kill"
   (let ((processor
-          (make-processor :queues '("test"))))
+          (make-processor :queues '("test") :timeout 1)))
     (diag "start")
-    (start processor :timeout 1)
+    (start processor)
     (is (processor-stopped-p processor) nil)
     (ok (bt:thread-alive-p (processor-thread processor)))
     (diag "stop")
@@ -73,13 +71,12 @@
     (is (processor-thread processor) nil)
 
     (diag "kill")
-    (start processor :timeout 5)
+    (start processor)
     (is (processor-stopped-p processor) nil)
     (ok (bt:thread-alive-p (processor-thread processor)))
     (kill processor)
     (sleep 1)
-    (is (processor-stopped-p processor) t)
-    (is (processor-thread processor) nil)))
+    (is (processor-stopped-p processor) t)))
 
 (subtest "perform"
   (let ((conn (connect)))
@@ -97,9 +94,13 @@
     (start processor)
     (sleep 0.5)
     (is *perform-result* t)
-    (kill processor)))
+    (kill processor)
+    (sleep 1)))
 
-(is (bt:all-threads) *threads*
+(is (remove-if-not (lambda (thread)
+                     (alexandria:starts-with-subseq "redqing " (bt:thread-name thread)))
+                   (bt:all-threads))
+    nil
     "All threads has been terminated")
 
 (prove:finalize)

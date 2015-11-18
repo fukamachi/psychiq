@@ -28,11 +28,13 @@
   scheduled)
 
 (defun make-worker (&key (host *default-redis-host*) (port *default-redis-port*)
-                      (concurrency 25) (queue *default-queue-name*))
+                      (concurrency 25) (queue *default-queue-name*)
+                      (interval 5))
   (let ((manager (make-manager :host host
                                :port port
                                :queues (ensure-list queue)
-                               :count concurrency))
+                               :count concurrency
+                               :timeout interval))
         (scheduled
           (redqing.worker.scheduled:make-scheduled :host host :port port)))
     (%make-worker :manager manager :scheduled scheduled)))
@@ -48,17 +50,17 @@
               (worker-status worker)))))
 
 (defun run (&rest initargs
-            &key host port (concurrency 25) (timeout 5) queue)
+            &key host port (concurrency 25) queue)
   (declare (ignore host port concurrency queue))
-  (start (apply #'make-worker initargs) :timeout timeout))
+  (start (apply #'make-worker initargs)))
 
 (defun wait-for-processors (worker)
   (map nil #'bt:join-thread
        (mapcar #'processor-thread
                (manager-children (worker-manager worker)))))
 
-(defun start (worker &key (timeout 5))
-  (redqing.worker.manager:start (worker-manager worker) :timeout timeout)
+(defun start (worker)
+  (redqing.worker.manager:start (worker-manager worker))
   (redqing.worker.scheduled:start (worker-scheduled worker))
   worker)
 

@@ -40,8 +40,7 @@
     (diag "kill")
     (start scheduled)
     (kill scheduled)
-    (is (scheduled-stopped-p scheduled) t)
-    (is (scheduled-thread scheduled) nil)))
+    (is (scheduled-stopped-p scheduled) t)))
 
 (defclass deferred-job (redq:job) ())
 (defmethod redq:perform ((job deferred-job) &rest args)

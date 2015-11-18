@@ -20,8 +20,6 @@
                 #:redis-key))
 (in-package :redqing-test.worker.manager)
 
-(defvar *threads* (bt:all-threads))
-
 (plan 4)
 
 (subtest "make-manager"
@@ -47,18 +45,19 @@
              (enqueue-to "test" 'deferred-job)))
       (disconnect conn)))
   (setf *perform-result* nil)
-  (let ((manager (make-manager :queues '("test"))))
-    (start manager :timeout 1)
+  (let ((manager (make-manager :queues '("test") :timeout 1)))
+    (start manager)
     (sleep 1.2)
     (is *perform-result* t)
-    (kill manager)))
+    (kill manager)
+    (sleep 1)))
 
 (subtest "processor died"
   (defmethod perform ((job deferred-job) &rest args)
     (declare (ignore args))
     (error "Failed"))
   (let ((conn (connect))
-        (manager (make-manager :queues '("test")))
+        (manager (make-manager :queues '("test") :timeout 1))
         job-info)
     (unwind-protect
          (progn
@@ -70,7 +69,7 @@
              (setf job-info
                    (enqueue-to "test" 'deferred-job)))
 
-           (start manager :timeout 1)
+           (start manager)
            (sleep 1.2)
            (with-connection conn
              (let ((payloads
@@ -83,9 +82,13 @@
            (stop manager)
            (sleep 1))
       (disconnect conn)
-      (kill manager))))
+      (kill manager)
+      (sleep 1))))
 
-(is (bt:all-threads) *threads*
+(is (remove-if-not (lambda (thread)
+                     (alexandria:starts-with-subseq "redqing " (bt:thread-name thread)))
+                   (bt:all-threads))
+    nil
     "All threads has been terminated")
 
-(finalize)
+(prove:finalize)

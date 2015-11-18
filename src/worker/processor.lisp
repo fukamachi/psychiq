@@ -21,6 +21,7 @@
            #:processor-stopped-p
            #:processor-manager
            #:processor-connection
+           #:processor-timeout
            #:run
            #:start
            #:stop
@@ -36,7 +37,8 @@
   (queues '() :type list)
   (manager nil)
   (thread nil)
-  (stopped-p t))
+  (stopped-p t)
+  (timeout 5))
 
 (defmethod print-object ((processor processor) stream)
   (print-unreadable-object (processor stream :type processor)
@@ -45,15 +47,15 @@
               queues
               stopped-p))))
 
-(defun make-processor (&key (host *default-redis-host*) (port *default-redis-port*) queues manager)
+(defun make-processor (&key (host *default-redis-host*) (port *default-redis-port*) queues manager (timeout 5))
   (unless (and (listp queues)
                queues)
     (error ":queues must be a list containing at least one queue name"))
   (let ((conn (make-connection :host host :port port)))
-    (%make-processor :connection conn :queues queues :manager manager)))
+    (%make-processor :connection conn :queues queues :manager manager :timeout timeout)))
 
-(defgeneric fetch-job (processor &key timeout)
-  (:method ((processor processor) &key (timeout 5))
+(defgeneric fetch-job (processor)
+  (:method ((processor processor))
     (let ((ret
             (with-connection (processor-connection processor)
               (apply #'red:blpop
@@ -62,7 +64,7 @@
                                 (redis-key "queue" queue))
                               ;; TODO: allow to shuffle the queues
                               (processor-queues processor))
-                      (list timeout))))))
+                      (list (processor-timeout processor)))))))
       (if ret
           (destructuring-bind (queue payload) ret
             (vom:debug "Found job on ~A" queue)
@@ -71,15 +73,16 @@
              (omit-redis-prefix queue "queue")))
           nil))))
 
-(defgeneric run (processor &key timeout)
-  (:method ((processor processor) &key (timeout 5))
+(defgeneric run (processor)
+  (:method ((processor processor))
     (loop
       until (processor-stopped-p processor)
       do (multiple-value-bind (job-info queue)
-             (fetch-job processor :timeout timeout)
+             (fetch-job processor)
            (if job-info
                (process-job processor queue job-info)
-               (vom:debug "Timed out after ~D seconds" timeout))))))
+               (vom:debug "Timed out after ~D seconds"
+                          (processor-timeout processor)))))))
 
 (defgeneric finalize (processor)
   (:method ((processor processor))
@@ -88,8 +91,8 @@
     (disconnect (processor-connection processor))
     t))
 
-(defgeneric start (processor &key timeout)
-  (:method ((processor processor) &key (timeout 5))
+(defgeneric start (processor)
+  (:method ((processor processor))
     (setf (processor-stopped-p processor) nil)
     (setf (processor-thread processor)
           (bt:make-thread
@@ -97,7 +100,7 @@
              (unwind-protect
                   (progn
                     (ensure-connected (processor-connection processor))
-                    (run processor :timeout timeout))
+                    (run processor))
                (finalize processor)))
            :initial-bindings `((*standard-output* . ,*standard-output*)
                                (*error-output* . ,*error-output*))
@@ -117,9 +120,7 @@
     (let ((thread (processor-thread processor)))
       (when (and (bt:threadp thread)
                  (bt:thread-alive-p thread))
-        (bt:destroy-thread thread)
-        (ignore-errors
-         (bt:join-thread thread))))
+        (bt:destroy-thread thread)))
     t))
 
 (defgeneric process-job (processor queue job-info)

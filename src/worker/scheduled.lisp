@@ -75,9 +75,7 @@
   (let ((thread (scheduled-thread scheduled)))
     (when (and (bt:threadp thread)
                (bt:thread-alive-p thread))
-      (bt:destroy-thread thread)
-      (ignore-errors
-       (bt:join-thread thread))))
+      (bt:destroy-thread thread)))
   t)
 
 (defun enqueue-jobs (now)

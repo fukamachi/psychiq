@@ -21,14 +21,15 @@
   (lock (bt:make-recursive-lock))
   (stopped-p t))
 
-(defun make-manager (&key (host *default-redis-host*) (port *default-redis-port*) queues (count 25))
+(defun make-manager (&key (host *default-redis-host*) (port *default-redis-port*) queues (count 25) (timeout 5))
   (let ((manager (%make-manager :host host :port port :queues queues)))
     (setf (manager-children manager)
           (loop repeat count
                 collect (make-processor :host host
                                         :port port
                                         :queues queues
-                                        :manager manager)))
+                                        :manager manager
+                                        :timeout timeout)))
     manager))
 
 (defun processor-stopped (manager processor)
@@ -39,41 +40,38 @@
       (setf (manager-stopped-p manager) t)))
   (values))
 
-(defun processor-died (manager processor)
+(defun processor-died (manager processor e)
   (bt:with-recursive-lock-held ((manager-lock manager))
     (stop processor)
     (setf (manager-children manager)
           (delete processor (manager-children manager) :test #'eq))
     (unless (manager-stopped-p manager)
+      (vom:warn "Processor died with ~S: ~A" (class-name (class-of e)) e)
       (vom:debug "Adding a new processor...")
       (let ((new-processor
               (make-processor :host (manager-host manager)
                               :port (manager-port manager)
                               :queues (manager-queues manager)
-                              :manager manager)))
+                              :manager manager
+                              :timeout (processor-timeout processor))))
         (push new-processor (manager-children manager))
         (start new-processor))))
   (values))
 
-(defmethod run :around ((processor processor) &key timeout)
-  (declare (ignore timeout))
+(defmethod run :around ((processor processor))
   (handler-case (call-next-method)
     (error (e)
-      (vom:warn "Processor died with ~S: ~A" (class-name (class-of e)) e)
       (when-let (manager (processor-manager processor))
-        (processor-died manager processor))))
+        (processor-died manager processor e))))
   (vom:debug "Shutting down a processor..."))
 
 (defmethod finalize :after ((processor processor))
   (when-let (manager (processor-manager processor))
     (processor-stopped manager processor)))
 
-(defmethod start ((manager manager) &rest args &key timeout)
-  (declare (ignore timeout))
+(defmethod start ((manager manager))
   (setf (manager-stopped-p manager) nil)
-  (map nil (lambda (processor)
-             (apply #'start processor args))
-       (manager-children manager))
+  (map nil #'start (manager-children manager))
   manager)
 
 (defmethod stop ((manager manager))
