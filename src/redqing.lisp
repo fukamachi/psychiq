@@ -13,5 +13,4 @@
 (cl-reexport:reexport-from :redqing.client
                            :include '(#:enqueue))
 
-(cl-reexport:reexport-from :redqing.util
-                           :include '(#:*redqing-namespace*))
+(cl-reexport:reexport-from :redqing.specials)

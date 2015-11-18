@@ -1,6 +1,8 @@
 (in-package :cl-user)
 (defpackage redqing.util.redis
   (:use #:cl)
+  (:import-from #:redqing.specials
+                #:*redqing-namespace*)
   (:import-from #:alexandria
                 #:with-gensyms
                 #:starts-with-subseq)
@@ -21,8 +23,6 @@
          (if ,ok
              (red:exec)
              (red:discard))))))
-
-(defvar *redqing-namespace* "redqing")
 
 (defun redis-key (&rest keys)
   (format nil "~A:~{~A~^:~}"

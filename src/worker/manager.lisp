@@ -1,7 +1,8 @@
 (in-package :cl-user)
 (defpackage redqing.worker.manager
   (:use #:cl
-        #:redqing.worker.processor)
+        #:redqing.worker.processor
+        #:redqing.specials)
   (:import-from #:alexandria
                 #:when-let)
   (:export #:manager
@@ -20,7 +21,7 @@
   (lock (bt:make-recursive-lock))
   (stopped-p t))
 
-(defun make-manager (&key (host "localhost") (port 6379) queues (count 25))
+(defun make-manager (&key (host *default-redis-host*) (port *default-redis-port*) queues (count 25))
   (let ((manager (%make-manager :host host :port port :queues queues)))
     (setf (manager-children manager)
           (loop repeat count

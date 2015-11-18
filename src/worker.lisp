@@ -1,6 +1,7 @@
 (in-package :cl-user)
 (defpackage redqing.worker
-  (:use #:cl)
+  (:use #:cl
+        #:redqing.specials)
   (:import-from #:redqing.worker.manager
                 #:make-manager
                 #:manager-host
@@ -26,7 +27,8 @@
   manager
   scheduled)
 
-(defun make-worker (&key (host "localhost") (port 6379) (concurrency 25) (queue "default"))
+(defun make-worker (&key (host *default-redis-host*) (port *default-redis-port*)
+                      (concurrency 25) (queue *default-queue-name*))
   (let ((manager (make-manager :host host
                                :port port
                                :queues (ensure-list queue)
@@ -46,8 +48,7 @@
               (worker-status worker)))))
 
 (defun run (&rest initargs
-            &key (host "localhost") (port 6379) (concurrency 25) (timeout 5)
-              (queue "default"))
+            &key host port (concurrency 25) (timeout 5) queue)
   (declare (ignore host port concurrency queue))
   (start (apply #'make-worker initargs) :timeout timeout))
 

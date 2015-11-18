@@ -1,7 +1,8 @@
 (in-package :cl-user)
 (defpackage redqing.worker.processor
   (:use #:cl
-        #:redqing.util)
+        #:redqing.util
+        #:redqing.specials)
   (:import-from #:redqing.connection
                 #:connection
                 #:make-connection
@@ -43,7 +44,7 @@
               queues
               stopped-p))))
 
-(defun make-processor (&key (host "localhost") (port 6379) queues manager)
+(defun make-processor (&key (host *default-redis-host*) (port *default-redis-port*) queues manager)
   (unless (and (listp queues)
                queues)
     (error ":queues must be a list containing at least one queue name"))

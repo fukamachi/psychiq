@@ -1,6 +1,7 @@
 (in-package :cl-user)
 (defpackage redqing.connection
-  (:use #:cl)
+  (:use #:cl
+        #:redqing.specials)
   (:import-from #:alexandria
                 #:when-let
                 #:once-only)
@@ -21,10 +22,10 @@
 (defclass connection ()
   ((host :type 'string
          :initarg :host
-         :initform "localhost")
+         :initform *default-redis-host*)
    (port :type 'integer
          :initarg :port
-         :initform 6379)
+         :initform *default-redis-port*)
    (redis :type (or redis:redis-connection null)
           :initform nil
           :accessor redis-connection)))

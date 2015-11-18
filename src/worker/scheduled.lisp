@@ -1,7 +1,8 @@
 (in-package :cl-user)
 (defpackage redqing.worker.scheduled
   (:use #:cl
-        #:redqing.util)
+        #:redqing.util
+        #:redqing.specials)
   (:import-from #:redqing.connection
                 #:with-redis-connection
                 #:make-connection
@@ -27,7 +28,7 @@
   thread
   (stopped-p t))
 
-(defun make-scheduled (&key (host "localhost") (port 6379))
+(defun make-scheduled (&key (host *default-redis-host*) (port *default-redis-port*))
   (let ((conn (make-connection :host host :port port)))
     (%make-scheduled :connection conn)))
 
@@ -88,6 +89,6 @@
           while payload
           do (red:zrem (redis-key "retry") payload)
              (let* ((job-info (decode-object payload))
-                    (queue (or (aget job-info "queue") "default")))
+                    (queue (or (aget job-info "queue") *default-queue-name*)))
                (enqueue-to-queue conn queue job-info)
                (vom:debug "Enqueued to ~A: ~S" queue job-info)))))

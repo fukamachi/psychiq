@@ -26,6 +26,7 @@
                :vom
                :alexandria)
   :components ((:module "src"
+                :depends-on ("src/specials")
                 :components
                 ((:file "redqing" :depends-on ("core" "client"))
                  (:file "client")
@@ -52,7 +53,8 @@
                   :components
                   ((:file "util" :depends-on ("assoc" "redis"))
                    (:file "assoc")
-                   (:file "redis"))))))
+                   (:file "redis")))))
+               (:file "src/specials"))
   :description "Redis-backed job queueing system"
   :long-description
   #.(with-open-file (stream (merge-pathnames
