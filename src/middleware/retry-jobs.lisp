@@ -35,7 +35,6 @@
         (funcall next job args)))))
 
 (defun attempt-retry (conn queue job args e)
-  (declare (ignore queue))
   (let* ((options (job-options job))
          (max-retries (aget options "max_retries")))
     (setf max-retries
@@ -46,6 +45,8 @@
     (nconcf options
             `(("error_message" . ,(princ-to-string e))
               ("error_class" . ,(symbol-name-with-package (class-name (class-of e))))))
+
+    (setf (aget options "queue") queue)
 
     (let ((retry-count (aget options "retry_count")))
       (if retry-count

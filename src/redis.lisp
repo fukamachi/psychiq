@@ -2,11 +2,13 @@
 (defpackage redqing.redis
   (:use #:cl)
   (:import-from #:alexandria
-                #:with-gensyms)
+                #:with-gensyms
+                #:starts-with-subseq)
   (:export #:with-transaction
 
            #:*redqing-namespace*
-           #:redis-key))
+           #:redis-key
+           #:omit-redis-prefix))
 (in-package :redqing.redis)
 
 (defmacro with-transaction (&body body)
@@ -26,3 +28,9 @@
   (format nil "~A:~{~A~^:~}"
           *redqing-namespace*
           keys))
+
+(defun omit-redis-prefix (key &rest prefixes)
+  (let ((prefix (format nil (apply #'redis-key prefixes) ":")))
+    (unless (starts-with-subseq prefix key)
+      (error "~S does not start with ~S" key prefix))
+    (subseq key (length prefix))))

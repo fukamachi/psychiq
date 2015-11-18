@@ -13,7 +13,8 @@
   (:import-from #:redqing.middleware.retry-jobs
                 #:*redqing-middleware-retry-jobs*)
   (:import-from #:redqing.redis
-                #:redis-key)
+                #:redis-key
+                #:omit-redis-prefix)
   (:import-from #:redqing.coder
                 #:decode-object)
   (:import-from #:redqing.util.assoc
@@ -69,7 +70,7 @@
             (vom:debug "Found job on ~A" queue)
             (values
              (decode-object payload)
-             queue))
+             (omit-redis-prefix queue "queue")))
           nil))))
 
 (defgeneric run (processor &key timeout)
