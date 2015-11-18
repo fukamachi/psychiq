@@ -35,8 +35,9 @@
     (start worker)
     (is (worker-status worker) :running)
     (kill worker)
-    (is (worker-status worker) :stopped)))
+    (ok (find (worker-status worker) '(:stopping :stopped)))))
 
+(sleep 3)
 (is (remove-if-not (lambda (thread)
                      (and (bt:thread-alive-p thread)
                           (alexandria:starts-with-subseq "redqing " (bt:thread-name thread))))
@@ -50,6 +51,8 @@
     (start worker)
     (sleep 1)
     (kill worker)
+
+    (sleep 3)
 
     (is (remove-if-not (lambda (thread)
                          (and (bt:thread-alive-p thread)

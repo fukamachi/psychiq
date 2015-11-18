@@ -37,15 +37,14 @@
     "OK")
   (let ((conn (connect)))
     (unwind-protect
-         (progn
-           ;; Clear
-           (with-connection conn
-             (red:del (redis-key "queue" "test"))
-             ;; Enqueue a job
-             (enqueue-to "test" 'deferred-job)))
+         ;; Clear
+         (with-connection conn
+           (red:del (redis-key "queue" "manager-test-normal-case"))
+           ;; Enqueue a job
+           (enqueue-to "manager-test-normal-case" 'deferred-job))
       (disconnect conn)))
   (setf *perform-result* nil)
-  (let ((manager (make-manager :queues '("test") :timeout 1)))
+  (let ((manager (make-manager :queues '("manager-test-normal-case") :timeout 1)))
     (start manager)
     (sleep 1.2)
     (is *perform-result* t)
@@ -56,17 +55,17 @@
     (declare (ignore args))
     (error "Failed"))
   (let ((conn (connect))
-        (manager (make-manager :queues '("test") :timeout 1))
+        (manager (make-manager :queues '("manager-test-processor-died") :timeout 1))
         job-info)
     (unwind-protect
          (progn
            ;; Clear
            (with-connection conn
-             (red:del (redis-key "queue" "test"))
+             (red:del (redis-key "queue" "manager-test-processor-died"))
              (red:del (redis-key "retry"))
              ;; Enqueue a job
              (setf job-info
-                   (enqueue-to "test" 'deferred-job)))
+                   (enqueue-to "manager-test-processor-died" 'deferred-job)))
 
            (start manager)
            (sleep 1.2)
