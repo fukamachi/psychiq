@@ -35,8 +35,7 @@
     (start worker)
     (is (worker-status worker) :running)
     (kill worker)
-    (is (worker-status worker) :stopped)
-    (sleep 1)))
+    (is (worker-status worker) :stopped)))
 
 (is (remove-if-not (lambda (thread)
                      (and (bt:thread-alive-p thread)
@@ -51,7 +50,6 @@
     (start worker)
     (sleep 1)
     (kill worker)
-    (sleep 1)
 
     (is (remove-if-not (lambda (thread)
                          (and (bt:thread-alive-p thread)

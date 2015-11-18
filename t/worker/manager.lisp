@@ -49,8 +49,7 @@
     (start manager)
     (sleep 1.2)
     (is *perform-result* t)
-    (kill manager)
-    (sleep 1)))
+    (kill manager)))
 
 (subtest "processor died"
   (defmethod perform ((job deferred-job) &rest args)
@@ -82,8 +81,7 @@
            (stop manager)
            (sleep 1))
       (disconnect conn)
-      (kill manager)
-      (sleep 1))))
+      (kill manager))))
 
 (is (remove-if-not (lambda (thread)
                      (alexandria:starts-with-subseq "redqing " (bt:thread-name thread)))

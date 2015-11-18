@@ -86,9 +86,9 @@
 
 (defgeneric finalize (processor)
   (:method ((processor processor))
-    (setf (processor-thread processor) nil)
     (setf (processor-stopped-p processor) t)
     (disconnect (processor-connection processor))
+    (setf (processor-thread processor) nil)
     t))
 
 (defgeneric start (processor)
@@ -121,7 +121,8 @@
       (when (and (bt:threadp thread)
                  (bt:thread-alive-p thread))
         (bt:destroy-thread thread)
-        (loop while (bt:thread-alive-p thread)
+        (loop while (or (bt:thread-alive-p thread)
+                        (processor-thread processor))
               do (sleep 0.1))))
     t))
 

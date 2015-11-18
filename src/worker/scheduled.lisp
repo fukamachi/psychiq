@@ -47,10 +47,9 @@
                               (error (e)
                                 (vom:error "~A" e)))
                             (sleep (scaled-poll-interval)))
-                (with-slots (stopped-p thread connection) scheduled
-                  (setf stopped-p t)
-                  (setf thread nil)
-                  (disconnect connection))))
+                (setf (scheduled-stopped-p scheduled) t)
+                (disconnect (scheduled-connection scheduled))
+                (setf (scheduled-thread scheduled) nil)))
             :initial-bindings `((*standard-output* . ,*standard-output*)
                                 (*error-output* . ,*error-output*))
             :name "redqing scheduled")))
@@ -76,7 +75,8 @@
     (when (and (bt:threadp thread)
                (bt:thread-alive-p thread))
       (bt:destroy-thread thread)
-      (loop while (bt:thread-alive-p thread)
+      (loop while (or (bt:thread-alive-p thread)
+                      (scheduled-thread scheduled))
             do (sleep 0.1))))
   t)
 

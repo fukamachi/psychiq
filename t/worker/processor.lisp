@@ -75,7 +75,6 @@
     (is (processor-stopped-p processor) nil)
     (ok (bt:thread-alive-p (processor-thread processor)))
     (kill processor)
-    (sleep 1)
     (is (processor-stopped-p processor) t)))
 
 (subtest "perform"
@@ -94,8 +93,7 @@
     (start processor)
     (sleep 0.5)
     (is *perform-result* t)
-    (kill processor)
-    (sleep 1)))
+    (kill processor)))
 
 (is (remove-if-not (lambda (thread)
                      (alexandria:starts-with-subseq "redqing " (bt:thread-name thread)))
