@@ -18,20 +18,29 @@
   host
   port
   (queues '())
+  (count 25)
   (children '())
   (lock (bt:make-recursive-lock))
-  (stopped-p t))
+  (stopped-p t)
+  make-processor-fn)
 
 (defun make-manager (&key (host *default-redis-host*) (port *default-redis-port*) queues (count 25) (timeout 5))
-  (let ((manager (%make-manager :host host :port port :queues queues)))
-    (setf (manager-children manager)
-          (loop repeat count
-                collect (make-processor :host host
-                                        :port port
-                                        :queues queues
-                                        :manager manager
-                                        :timeout timeout)))
+  (let ((manager (%make-manager :host host :port port :queues queues
+                                :count count)))
+    (setf (manager-make-processor-fn manager)
+          (lambda ()
+            (make-processor :host host
+                            :port port
+                            :queues queues
+                            :manager manager
+                            :timeout timeout)))
     manager))
+
+(defun make-child-processors (manager)
+  (bt:with-recursive-lock-held ((manager-lock manager))
+    (setf (manager-children manager)
+          (loop repeat (manager-count manager)
+                collect (funcall (manager-make-processor-fn manager))))))
 
 (defun processor-stopped (manager processor)
   (bt:with-recursive-lock-held ((manager-lock manager))
@@ -50,11 +59,7 @@
       (vom:warn "Processor died with ~S: ~A" (class-name (class-of e)) e)
       (vom:debug "Adding a new processor...")
       (let ((new-processor
-              (make-processor :host (manager-host manager)
-                              :port (manager-port manager)
-                              :queues (manager-queues manager)
-                              :manager manager
-                              :timeout (processor-timeout processor))))
+              (funcall (manager-make-processor-fn manager))))
         (push new-processor (manager-children manager))
         (start new-processor))))
   (values))
@@ -72,6 +77,7 @@
 
 (defmethod start ((manager manager))
   (setf (manager-stopped-p manager) nil)
+  (make-child-processors manager)
   (map nil #'start (manager-children manager))
   manager)
 

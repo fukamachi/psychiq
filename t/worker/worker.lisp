@@ -16,7 +16,7 @@
   (let ((worker (make-worker)))
     (is-type worker 'worker)
     (is (princ-to-string worker)
-        "#<WORKER REDIS: localhost:6379 / PROCESSORS: 25 / QUEUE: (default) / STATUS: STOPPED>")))
+        "#<WORKER REDIS: localhost:6379 / CONCURRENCY: 25 / QUEUE: (default) / STATUS: STOPPED>")))
 
 (subtest "start, stop & kill"
   (let ((worker (make-worker :interval 1)))

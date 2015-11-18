@@ -7,7 +7,8 @@
                 #:manager-host
                 #:manager-port
                 #:manager-queues
-                #:manager-children)
+                #:manager-children
+                #:manager-count)
   (:import-from #:redqing.worker.processor
                 #:processor-thread)
   (:import-from #:redqing.connection
@@ -42,10 +43,10 @@
 (defmethod print-object ((worker worker) stream)
   (print-unreadable-object (worker stream :type worker)
     (let ((manager (worker-manager worker)))
-      (format stream "REDIS: ~A:~A / PROCESSORS: ~A / QUEUE: ~A / STATUS: ~A"
+      (format stream "REDIS: ~A:~A / CONCURRENCY: ~A / QUEUE: ~A / STATUS: ~A"
               (manager-host manager)
               (manager-port manager)
-              (length (manager-children manager))
+              (manager-count manager)
               (manager-queues manager)
               (worker-status worker)))))
 
