@@ -131,7 +131,8 @@
   (let ((thread (processor-thread processor)))
     (when (and (bt:threadp thread)
                (bt:thread-alive-p thread))
-      (loop while (bt:thread-alive-p thread)
+      (loop while (or (bt:thread-alive-p thread)
+                      (not (eq (processor-status processor) :stopped)))
             do (sleep 0.1)))))
 
 (defgeneric process-job (processor queue job-info)

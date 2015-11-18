@@ -77,7 +77,7 @@
     (is (processor-status processor) :running)
     (ok (bt:thread-alive-p (processor-thread processor)))
     (kill processor)
-    (ok (find (processor-status processor) '(:stopping :stopped)))))
+    (is (processor-status processor) :stopped)))
 
 (subtest "perform"
   (let ((conn (connect)))

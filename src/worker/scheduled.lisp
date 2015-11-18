@@ -76,7 +76,8 @@
                (bt:thread-alive-p thread))
       (bt:destroy-thread thread)
       (when wait
-        (loop while (bt:thread-alive-p thread)
+        (loop while (or (bt:thread-alive-p thread)
+                        (not (eq (scheduled-status scheduled) :stopped)))
               do (sleep 0.1))
         (sleep 3))))
   t)
