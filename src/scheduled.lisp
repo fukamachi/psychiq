@@ -3,6 +3,7 @@
   (:use #:cl)
   (:import-from #:redqing.connection
                 #:with-redis-connection
+                #:make-connection
                 #:ensure-connected
                 #:disconnect)
   (:import-from #:redqing.queue
@@ -16,16 +17,22 @@
   (:import-from #:local-time
                 #:timestamp-to-unix
                 #:now)
-  (:export #:start
+  (:export #:scheduled
+           #:scheduled-stopped-p
+           #:start
            #:stop
            #:kill
            #:make-scheduled))
 (in-package :redqing.scheduled)
 
-(defstruct scheduled
+(defstruct (scheduled (:constructor %make-scheduled))
   connection
   thread
   (stopped-p t))
+
+(defun make-scheduled (&key (host "localhost") (port 6379))
+  (let ((conn (make-connection :host host :port port)))
+    (%make-scheduled :connection conn)))
 
 (defun start (scheduled)
   (unless (scheduled-stopped-p scheduled)
@@ -62,10 +69,10 @@
        (/ poll-interval-average 2))))
 
 (defun stop (scheduled)
-  (with-slots (stopped-p thread connection) scheduled
-    (setf stopped-p t)
-    (setf thread nil)
-    (disconnect connection)))
+  (when (scheduled-stopped-p scheduled)
+    (return-from stop nil))
+
+  (setf (scheduled-stopped-p scheduled) t))
 
 (defun kill (scheduled)
   (with-slots (stopped-p thread connection) scheduled

@@ -25,13 +25,12 @@
   (let ((manager (make-manager :host host
                                :port port
                                :queues (ensure-list queue)
-                               :count concurrency)))
+                               :count concurrency))
+        (scheduled
+          (redqing.scheduled:make-scheduled :host host :port)))
     (redqing.worker.manager:start manager :timeout timeout)
-    (let* ((conn (make-connection :host host :port port))
-           (scheduled
-             (redqing.scheduled:make-scheduled :connection conn)))
-      (redqing.scheduled:start scheduled)
-      (make-worker :manager manager :scheduled scheduled))))
+    (redqing.scheduled:start scheduled)
+    (make-worker :manager manager :scheduled scheduled)))
 
 (defun wait-for-processors (worker)
   (map nil #'bt:join-thread

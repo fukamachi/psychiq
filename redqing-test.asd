@@ -26,6 +26,7 @@
                   :components
                   ((:test-file "processor")
                    (:test-file "manager")))
+                 (:file "scheduled")
                  (:module "util"
                   :components
                   ((:test-file "util")
