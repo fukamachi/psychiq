@@ -7,7 +7,11 @@
                 #:scheduled-thread
                 #:enqueue-jobs)
   (:import-from #:redqing.connection
-                #:connect))
+                #:with-redis-connection
+                #:connect
+                #:disconnect)
+  (:import-from #:redqing.util.redis
+                #:redis-key))
 (in-package :redqing-test.worker.scheduled)
 
 (plan 3)
