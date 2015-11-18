@@ -5,6 +5,7 @@
         #:redqing.worker.processor)
   (:shadowing-import-from #:redqing.worker.processor
                           #:run
+                          #:finalize
                           #:decode-job
                           #:processor-thread)
   (:import-from #:redqing.connection
@@ -20,7 +21,9 @@
                 #:redis-key))
 (in-package :redqing-test.worker.processor)
 
-(plan nil)
+(plan 5)
+
+(defvar *threads* (bt:all-threads))
 
 (subtest "processor"
   (let ((processor (make-processor :queues '("test"))))
@@ -96,4 +99,7 @@
     (is *perform-result* t)
     (kill processor)))
 
-(finalize)
+(is (bt:all-threads) *threads*
+    "All threads has been terminated")
+
+(prove:finalize)

@@ -20,7 +20,9 @@
                 #:redis-key))
 (in-package :redqing-test.worker.manager)
 
-(plan 3)
+(defvar *threads* (bt:all-threads))
+
+(plan 4)
 
 (subtest "make-manager"
   (let ((manager (make-manager :queues '("test"))))
@@ -82,5 +84,8 @@
            (sleep 1))
       (disconnect conn)
       (kill manager))))
+
+(is (bt:all-threads) *threads*
+    "All threads has been terminated")
 
 (finalize)

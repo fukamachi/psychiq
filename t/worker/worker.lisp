@@ -10,7 +10,9 @@
                 #:worker))
 (in-package :redqing-test.worker)
 
-(plan 2)
+(defvar *threads* (bt:all-threads))
+
+(plan 3)
 
 (subtest "make-worker"
   (let ((worker (make-worker)))
@@ -35,5 +37,8 @@
     (is (worker-status worker) :running)
     (kill worker)
     (is (worker-status worker) :stopped)))
+
+(is (bt:all-threads) *threads*
+    "All threads has been terminated")
 
 (finalize)

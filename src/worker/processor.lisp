@@ -25,6 +25,7 @@
            #:start
            #:stop
            #:kill
+           #:finalize
            #:fetch-job
            #:process-job
            #:perform-job))
@@ -80,6 +81,13 @@
                (process-job processor queue job-info)
                (vom:debug "Timed out after ~D seconds" timeout))))))
 
+(defgeneric finalize (processor)
+  (:method ((processor processor))
+    (setf (processor-thread processor) nil)
+    (setf (processor-stopped-p processor) t)
+    (disconnect (processor-connection processor))
+    t))
+
 (defgeneric start (processor &key timeout)
   (:method ((processor processor) &key (timeout 5))
     (setf (processor-stopped-p processor) nil)
@@ -90,9 +98,7 @@
                   (progn
                     (ensure-connected (processor-connection processor))
                     (run processor :timeout timeout))
-               (setf (processor-thread processor) nil)
-               (stop processor)
-               (disconnect (processor-connection processor))))
+               (finalize processor)))
            :initial-bindings `((*standard-output* . ,*standard-output*)
                                (*error-output* . ,*error-output*))
            :name "redqing processor"))
@@ -107,14 +113,13 @@
 
 (defgeneric kill (processor)
   (:method ((processor processor))
-    (when (processor-stopped-p processor)
-      (return-from kill nil))
+    (setf (processor-stopped-p processor) t)
     (let ((thread (processor-thread processor)))
       (when (and (bt:threadp thread)
                  (bt:thread-alive-p thread))
-        (bt:destroy-thread thread)))
-    (setf (processor-thread processor) nil)
-    (setf (processor-stopped-p processor) t)
+        (bt:destroy-thread thread)
+        (ignore-errors
+         (bt:join-thread thread))))
     t))
 
 (defgeneric process-job (processor queue job-info)

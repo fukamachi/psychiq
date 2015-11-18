@@ -14,7 +14,9 @@
                 #:redis-key))
 (in-package :redqing-test.worker.scheduled)
 
-(plan 3)
+(defvar *threads* (bt:all-threads))
+
+(plan 4)
 
 (subtest "make-scheduled"
   (let ((scheduled (make-scheduled)))
@@ -50,18 +52,20 @@
   (let ((conn (connect))
         (now (local-time:timestamp-to-unix (local-time:now))))
     (unwind-protect
-         (progn
-           (with-connection conn
-             (red:del (redis-key "retry"))
-             (red:del (redis-key "queue" "test"))
-             (red:zadd (redis-key "retry")
-                       now
-                       "{\"class\":\"REDQING-TEST.WORKER.SCHEDULED::DEFERRED-JOB\",\"args\":[],\"jid\":\"b1ly5y10yia9\",\"enqueued_at\":1447827023,\"created_at\":1447827023,\"error_message\":\"Failed\",\"error_class\":\"COMMON-LISP::SIMPLE-ERROR\",\"failed_at\":1447827023,\"retry_count\":0,\"queue\":\"test\"}")
-             (enqueue-jobs (1+ now))
-             (is (red:zrange (redis-key "retry") 0 1) nil)
-             (let ((jobs (red:lrange (redis-key "queue" "test") 0 -1)))
-               (is (length jobs) 1)
-               (like (first jobs) "\"jid\":\"b1ly5y10yia9\""))))
+         (with-connection conn
+           (red:del (redis-key "retry"))
+           (red:del (redis-key "queue" "test"))
+           (red:zadd (redis-key "retry")
+                     now
+                     "{\"class\":\"REDQING-TEST.WORKER.SCHEDULED::DEFERRED-JOB\",\"args\":[],\"jid\":\"b1ly5y10yia9\",\"enqueued_at\":1447827023,\"created_at\":1447827023,\"error_message\":\"Failed\",\"error_class\":\"COMMON-LISP::SIMPLE-ERROR\",\"failed_at\":1447827023,\"retry_count\":0,\"queue\":\"test\"}")
+           (enqueue-jobs (1+ now))
+           (is (red:zrange (redis-key "retry") 0 1) nil)
+           (let ((jobs (red:lrange (redis-key "queue" "test") 0 -1)))
+             (is (length jobs) 1)
+             (like (first jobs) "\"jid\":\"b1ly5y10yia9\"")))
       (disconnect conn))))
+
+(is (bt:all-threads) *threads*
+    "All threads has been terminated")
 
 (finalize)

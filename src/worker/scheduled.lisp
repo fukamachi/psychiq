@@ -71,11 +71,14 @@
   (setf (scheduled-stopped-p scheduled) t))
 
 (defun kill (scheduled)
-  (with-slots (stopped-p thread connection) scheduled
-    (setf stopped-p t)
-    (bt:destroy-thread thread)
-    (setf thread nil)
-    (disconnect connection)))
+  (setf (scheduled-stopped-p scheduled) t)
+  (let ((thread (scheduled-thread scheduled)))
+    (when (and (bt:threadp thread)
+               (bt:thread-alive-p thread))
+      (bt:destroy-thread thread)
+      (ignore-errors
+       (bt:join-thread thread))))
+  t)
 
 (defun enqueue-jobs (now)
   (loop for payload = (first

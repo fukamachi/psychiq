@@ -64,7 +64,7 @@
         (processor-died manager processor))))
   (vom:debug "Shutting down a processor..."))
 
-(defmethod stop :after ((processor processor))
+(defmethod finalize :after ((processor processor))
   (when-let (manager (processor-manager processor))
     (processor-stopped manager processor)))
 
@@ -87,9 +87,6 @@
   t)
 
 (defmethod kill ((manager manager))
-  (when (manager-stopped-p manager)
-    (return-from kill nil))
-
   (setf (manager-stopped-p manager) t)
   (vom:info "Terminating all processors...")
   (map nil #'kill (manager-children manager))
