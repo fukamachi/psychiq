@@ -82,6 +82,7 @@
       (disconnect conn)
       (kill manager))))
 
+(sleep 3)
 (is (remove-if-not (lambda (thread)
                      (alexandria:starts-with-subseq "redqing " (bt:thread-name thread)))
                    (bt:all-threads))
