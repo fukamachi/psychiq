@@ -15,7 +15,7 @@
                 #:job
                 #:perform)
   (:import-from #:redqing.client
-                #:enqueue)
+                #:enqueue-to)
   (:import-from #:redqing.util.redis
                 #:redis-key))
 (in-package :redqing-test.worker.processor)
@@ -46,7 +46,7 @@
            (with-connection conn
              (red:del (redis-key "queue" "test"))
              ;; Enqueue a job
-             (enqueue 'deferred-job nil "test")))
+             (enqueue-to "test" 'deferred-job)))
       (disconnect conn)))
   ;; Fetch a job
   (let* ((processor
@@ -86,7 +86,7 @@
            (with-connection conn
              (red:del (redis-key "queue" "test"))
              ;; Enqueue a job
-             (enqueue 'deferred-job nil "test")))
+             (enqueue-to "test" 'deferred-job)))
       (disconnect conn)))
   (setf *perform-result* nil)
   (let ((processor

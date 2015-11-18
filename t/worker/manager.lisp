@@ -13,7 +13,7 @@
                 #:connect
                 #:disconnect)
   (:import-from #:redqing.client
-                #:enqueue)
+                #:enqueue-to)
   (:import-from #:redqing.util.assoc
                 #:aget)
   (:import-from #:redqing.util.redis
@@ -42,7 +42,7 @@
            (with-connection conn
              (red:del (redis-key "queue" "test"))
              ;; Enqueue a job
-             (enqueue 'deferred-job nil "test")))
+             (enqueue-to "test" 'deferred-job)))
       (disconnect conn)))
   (setf *perform-result* nil)
   (let ((manager (make-manager :queues '("test"))))
@@ -66,7 +66,7 @@
              (red:del (redis-key "retry"))
              ;; Enqueue a job
              (setf job-info
-                   (enqueue 'deferred-job nil "test")))
+                   (enqueue-to "test" 'deferred-job)))
 
            (start manager :timeout 1)
            (sleep 1.2)
