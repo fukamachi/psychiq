@@ -41,6 +41,11 @@
     (is (scheduled-stopped-p scheduled) t)
     (is (scheduled-thread scheduled) nil)))
 
+(defclass deferred-job (redq:job) ())
+(defmethod redq:perform ((job deferred-job) &rest args)
+  (declare (ignore args))
+  "OK")
+
 (subtest "enqueue-jobs"
   (let ((conn (connect))
         (now (local-time:timestamp-to-unix (local-time:now))))
@@ -51,7 +56,7 @@
              (red:del (redis-key "queue" "test"))
              (red:zadd (redis-key "retry")
                        now
-                       "{\"class\":\"REDQING-TEST.WORKER.MANAGER::DEFERRED-JOB\",\"args\":[],\"jid\":\"b1ly5y10yia9\",\"enqueued_at\":1447827023,\"created_at\":1447827023,\"error_message\":\"Failed\",\"error_class\":\"COMMON-LISP::SIMPLE-ERROR\",\"failed_at\":1447827023,\"retry_count\":0,\"queue\":\"test\"}"))
+                       "{\"class\":\"REDQING-TEST.WORKER.SCHEDULED::DEFERRED-JOB\",\"args\":[],\"jid\":\"b1ly5y10yia9\",\"enqueued_at\":1447827023,\"created_at\":1447827023,\"error_message\":\"Failed\",\"error_class\":\"COMMON-LISP::SIMPLE-ERROR\",\"failed_at\":1447827023,\"retry_count\":0,\"queue\":\"test\"}"))
            (enqueue-jobs conn (1+ now))
            (with-redis-connection conn
              (is (red:zrange (redis-key "retry") 0 1) nil)
