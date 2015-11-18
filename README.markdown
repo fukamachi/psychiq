@@ -1,7 +1,5 @@
 # Red Qing
 
-**WIP**
-
 [![Build Status](https://travis-ci.org/fukamachi/redqing.svg?branch=master)](https://travis-ci.org/fukamachi/redqing)
 [![Coverage Status](https://coveralls.io/repos/fukamachi/redqing/badge.svg?branch=master)](https://coveralls.io/r/fukamachi/redqing)
 [![Quicklisp dist](http://quickdocs.org/badge/redqing.svg)](http://quickdocs.org/redqing/)
@@ -14,26 +12,34 @@ This software is still ALPHA quality. The APIs will be likely to change.
 
 ## Usage
 
-### Main application
+### Writing a job
 
 ```common-lisp
-(defvar *conn* (redq:connect :host "localhost" :port 6379))
+(redq:connect-toplevel :host "localhost" :port 6379)
 
 (defclass deferred-job (redq:job) ())
 (defmethod redq:perform ((job deferred-job) &rest args)
   ;; blah blah blah
   )
-
-(redq:enqueue *conn* 'deferred-job '("arg1" "arg2"))
 ```
 
-### Worker process
+### Enqueueing
 
 ```common-lisp
-(redqing.worker:run :host "localhost" :port 6379)
+;; Enqueueing to "default" queue
+(redq:enqueue 'deferred-job '("arg1" "arg2"))
+
+;; Enqueueing to the specific queue
+(redq:enqueue-to "myapp-job" 'deferred-job '("arg1" "arg2"))
 ```
 
+### Starting a worker process
+
 Red Qing provides a [Roswell](https://github.com/snmsts/roswell) script for starting a worker process:
+
+```
+$ redqing --host localhost --port 6379 --system myapp-jobs
+```
 
 ```
 $ redqing -h
@@ -51,8 +57,8 @@ Options:
 ## Installation
 
 ```
-cd ~/common-lisp
-git clone https://github.com/fukamachi/redqing
+$ cd ~/common-lisp
+$ git clone https://github.com/fukamachi/redqing
 ```
 
 ```
