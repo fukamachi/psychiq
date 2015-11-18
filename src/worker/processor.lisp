@@ -123,7 +123,8 @@
                  (bt:thread-alive-p thread))
         (bt:destroy-thread thread)
         (when wait
-          (wait-processor-ends processor))))
+          (wait-processor-ends processor)
+          (sleep 3))))
     t))
 
 (defun wait-processor-ends (processor)
