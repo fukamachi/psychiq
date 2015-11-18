@@ -115,14 +115,14 @@
     (setf (processor-status processor) :stopping)
     t))
 
-(defgeneric kill (processor &optional wait-p)
-  (:method ((processor processor) &optional (wait-p t))
+(defgeneric kill (processor &optional wait)
+  (:method ((processor processor) &optional (wait t))
     (setf (processor-status processor) :stopping)
     (let ((thread (processor-thread processor)))
       (when (and (bt:threadp thread)
                  (bt:thread-alive-p thread))
         (bt:destroy-thread thread)
-        (when wait-p
+        (when wait
           (wait-processor-ends processor)
           (sleep 2))))
     t))

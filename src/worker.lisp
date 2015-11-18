@@ -69,8 +69,9 @@
   (redqing.worker.scheduled:stop (worker-scheduled worker)))
 
 (defun kill (worker)
-  (redqing.worker.manager:kill (worker-manager worker))
-  (redqing.worker.scheduled:kill (worker-scheduled worker)))
+  (redqing.worker.manager:kill (worker-manager worker) nil)
+  (redqing.worker.manager:wait-manager-ends (worker-manager worker))
+  (redqing.worker.scheduled:kill (worker-scheduled worker) t))
 
 (defun worker-status (worker)
   (let ((manager-stopped-p

@@ -10,7 +10,8 @@
            #:manager-stopped-p
            #:start
            #:stop
-           #:kill))
+           #:kill
+           #:wait-manager-ends))
 (in-package :redqing.worker.manager)
 
 (defstruct (manager (:constructor %make-manager))
@@ -84,14 +85,17 @@
   (vom:info "Exiting...")
   t)
 
-(defmethod kill ((manager manager) &optional (wait-p t))
+(defmethod kill ((manager manager) &optional (wait t))
   (setf (manager-stopped-p manager) t)
   (vom:info "Terminating all processors...")
   (map nil (lambda (p)
              (kill p nil))
        (manager-children manager))
-  (when wait-p
-    (map nil #'wait-processor-ends (manager-children manager))
+  (when wait
+    (wait-manager-ends manager)
     (sleep 2))
   (vom:info "Exiting...")
   t)
+
+(defun wait-manager-ends (manager)
+  (map nil #'wait-processor-ends (manager-children manager)))

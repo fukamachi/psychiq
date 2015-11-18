@@ -33,7 +33,7 @@
 
     (diag "stop")
     (stop scheduled)
-    (is (scheduled-status scheduled) :stopping)
+    (ok (find (scheduled-status scheduled) '(:stopping :stopped)))
     (sleep 3)
     (is (scheduled-status scheduled) :stopped)
     (is (scheduled-thread scheduled) nil)
@@ -41,7 +41,7 @@
     (diag "kill")
     (start scheduled)
     (kill scheduled)
-    (is (scheduled-status scheduled) :stopped)))
+    (ok (find (scheduled-status scheduled) '(:stopping :stopped)))))
 
 (defclass deferred-job (redq:job) ())
 (defmethod redq:perform ((job deferred-job) &rest args)
