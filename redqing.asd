@@ -28,11 +28,9 @@
   :components ((:module "src"
                 :depends-on ("util")
                 :components
-                ((:file "redqing" :depends-on ("core" "redis" "client"))
+                ((:file "redqing" :depends-on ("core" "client"))
                  (:file "client")
-                 (:file "redis")
                  (:module "core"
-                  :depends-on ("redis")
                   :components
                   ((:file "connection")
                    (:file "job")
@@ -41,20 +39,21 @@
                  (:file "worker" :depends-on ("worker-components"))
                  (:module "worker-components"
                   :pathname "worker"
-                  :depends-on ("core" "middleware" "redis")
+                  :depends-on ("core" "middleware")
                   :components
                   ((:file "processor")
                    (:file "manager" :depends-on ("processor"))
                    (:file "scheduled")))
                  (:module "middleware"
-                  :depends-on ("core" "redis")
+                  :depends-on ("core")
                   :components
                   ((:file "retry-jobs")))))
                (:module "util"
                 :pathname "src/util"
                 :components
                 ((:file "util")
-                 (:file "assoc"))))
+                 (:file "assoc")
+                 (:file "redis"))))
   :description "Redis-backed job queueing system"
   :long-description
   #.(with-open-file (stream (merge-pathnames

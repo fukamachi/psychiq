@@ -12,13 +12,13 @@
                 #:decode-job)
   (:import-from #:redqing.middleware.retry-jobs
                 #:*redqing-middleware-retry-jobs*)
-  (:import-from #:redqing.redis
-                #:redis-key
-                #:omit-redis-prefix)
   (:import-from #:redqing.coder
                 #:decode-object)
   (:import-from #:redqing.util.assoc
                 #:aget)
+  (:import-from #:redqing.util.redis
+                #:redis-key
+                #:omit-redis-prefix)
   (:export #:processor
            #:make-processor
            #:processor-stopped-p

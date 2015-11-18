@@ -6,7 +6,7 @@
                 #:with-redis-connection)
   (:import-from #:redqing.coder
                 #:encode-object)
-  (:import-from #:redqing.redis
+  (:import-from #:redqing.util.redis
                 #:with-transaction
                 #:redis-key)
   (:import-from #:redqing.util.assoc

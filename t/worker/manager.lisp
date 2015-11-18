@@ -12,12 +12,12 @@
                 #:with-redis-connection
                 #:connect
                 #:disconnect)
-  (:import-from #:redqing.redis
-                #:redis-key)
   (:import-from #:redqing.client
                 #:enqueue)
   (:import-from #:redqing.util.assoc
-                #:aget))
+                #:aget)
+  (:import-from #:redqing.util.redis
+                #:redis-key))
 (in-package :redqing-test.worker.manager)
 
 (plan 3)

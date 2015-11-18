@@ -1,5 +1,5 @@
 (in-package :cl-user)
-(defpackage redqing.redis
+(defpackage redqing.util.redis
   (:use #:cl)
   (:import-from #:alexandria
                 #:with-gensyms
@@ -9,7 +9,7 @@
            #:*redqing-namespace*
            #:redis-key
            #:omit-redis-prefix))
-(in-package :redqing.redis)
+(in-package :redqing.util.redis)
 
 (defmacro with-transaction (&body body)
   (with-gensyms (ok)

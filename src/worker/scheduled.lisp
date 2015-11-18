@@ -10,10 +10,10 @@
                 #:enqueue-to-queue)
   (:import-from #:redqing.coder
                 #:decode-object)
-  (:import-from #:redqing.redis
-                #:redis-key)
   (:import-from #:redqing.util.assoc
                 #:aget)
+  (:import-from #:redqing.util.redis
+                #:redis-key)
   (:import-from #:local-time
                 #:timestamp-to-unix
                 #:now)

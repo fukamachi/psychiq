@@ -9,13 +9,13 @@
                 #:encode-job)
   (:import-from #:redqing.coder
                 #:encode-object)
-  (:import-from #:redqing.redis
-                #:with-transaction
-                #:redis-key)
   (:import-from #:redqing.util
                 #:symbol-name-with-package)
   (:import-from #:redqing.util.assoc
                 #:aget)
+  (:import-from #:redqing.util.redis
+                #:with-transaction
+                #:redis-key)
   (:import-from #:local-time
                 #:timestamp-to-unix
                 #:now)

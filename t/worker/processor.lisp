@@ -14,10 +14,10 @@
   (:import-from #:redqing.job
                 #:job
                 #:perform)
-  (:import-from #:redqing.redis
-                #:redis-key)
   (:import-from #:redqing.client
-                #:enqueue))
+                #:enqueue)
+  (:import-from #:redqing.util.redis
+                #:redis-key))
 (in-package :redqing-test.worker.processor)
 
 (plan nil)
