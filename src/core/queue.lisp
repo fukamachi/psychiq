@@ -4,7 +4,7 @@
         #:redqing.util)
   (:import-from #:redqing.connection
                 #:connection
-                #:with-redis-connection)
+                #:with-connection)
   (:import-from #:redqing.coder
                 #:encode-object)
   (:import-from #:local-time
@@ -15,7 +15,7 @@
 
 (defun enqueue-to-queue (conn queue job-info)
   (check-type conn connection)
-  (with-redis-connection conn
+  (with-connection conn
     (with-redis-transaction
       (setf (aget job-info "enqueued_at") (timestamp-to-unix (now)))
       (red:sadd (redis-key "queues") queue)

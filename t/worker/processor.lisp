@@ -10,7 +10,7 @@
   (:import-from #:redqing.connection
                 #:connect
                 #:disconnect
-                #:with-redis-connection)
+                #:with-connection)
   (:import-from #:redqing.job
                 #:job
                 #:perform)
@@ -43,7 +43,7 @@
     (unwind-protect
          (progn
            ;; Clear
-           (with-redis-connection conn
+           (with-connection conn
              (red:del (redis-key "queue" "test")))
            ;; Enqueue a job
            (enqueue conn 'deferred-job nil "test"))
@@ -83,7 +83,7 @@
     (unwind-protect
          (progn
            ;; Clear
-           (with-redis-connection conn
+           (with-connection conn
              (red:del (redis-key "queue" "test")))
            ;; Enqueue a job
            (enqueue conn 'deferred-job nil "test"))

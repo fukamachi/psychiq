@@ -11,7 +11,7 @@
 (let ((conn (connect :host "localhost" :port 6379)))
   (unwind-protect
        (progn
-         (with-redis-connection conn
+         (with-connection conn
            (red:del "redqing:queue:test"))
          (ok (enqueue-to-queue conn
                                "test"

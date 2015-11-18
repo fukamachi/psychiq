@@ -8,7 +8,7 @@
                 #:make-connection
                 #:ensure-connected
                 #:disconnect
-                #:with-redis-connection)
+                #:with-connection)
   (:import-from #:redqing.job
                 #:perform
                 #:decode-job)
@@ -54,7 +54,7 @@
 (defgeneric fetch-job (processor &key timeout)
   (:method ((processor processor) &key (timeout 5))
     (let ((ret
-            (with-redis-connection (processor-connection processor)
+            (with-connection (processor-connection processor)
               (apply #'red:blpop
                      (nconc
                       (mapcar (lambda (queue)

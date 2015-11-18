@@ -9,7 +9,7 @@
                 #:job
                 #:perform)
   (:import-from #:redqing.connection
-                #:with-redis-connection
+                #:with-connection
                 #:connect
                 #:disconnect)
   (:import-from #:redqing.client
@@ -39,7 +39,7 @@
     (unwind-protect
          (progn
            ;; Clear
-           (with-redis-connection conn
+           (with-connection conn
              (red:del (redis-key "queue" "test")))
            ;; Enqueue a job
            (enqueue conn 'deferred-job nil "test"))
@@ -61,7 +61,7 @@
     (unwind-protect
          (progn
            ;; Clear
-           (with-redis-connection conn
+           (with-connection conn
              (red:del (redis-key "queue" "test"))
              (red:del (redis-key "retry")))
            ;; Enqueue a job
@@ -70,7 +70,7 @@
 
            (start manager :timeout 1)
            (sleep 1.2)
-           (with-redis-connection conn
+           (with-connection conn
              (let ((payloads
                      (red:zrangebyscore (redis-key "retry")
                                         "-inf"

@@ -5,12 +5,13 @@
   (:import-from #:alexandria
                 #:when-let
                 #:once-only)
-  (:export #:connect
+  (:export #:*connection*
+           #:connect
            #:disconnect
            #:reconnect
            #:ensure-connected
            #:make-connection
-           #:with-redis-connection
+           #:with-connection
 
            ;; Connection APIs
            #:connection
@@ -18,6 +19,8 @@
            #:close-connection
            #:connectedp))
 (in-package :redqing.connection)
+
+(defvar *connection*)
 
 (defclass connection ()
   ((host :type 'string
@@ -58,12 +61,12 @@
     (when-let (redis-conn (redis-connection conn))
       (redis::connection-open-p redis-conn))))
 
-(defmacro with-redis-connection (conn &body body)
+(defmacro with-connection (conn &body body)
   (once-only (conn)
     `(progn
-       (unless (connectedp ,conn)
-         (open-connection ,conn))
-       (let ((redis::*connection* (redis-connection ,conn)))
+       (ensure-connected ,conn)
+       (let ((*connection* ,conn)
+             (redis::*connection* (redis-connection ,conn)))
          ,@body))))
 
 (defun make-connection (&rest initargs &key host port)

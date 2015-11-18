@@ -5,7 +5,10 @@
 (in-package :redqing)
 
 (cl-reexport:reexport-from :redqing.connection
-                           :include '(#:connect #:disconnect #:reconnect #:with-redis-connection #:connectedp))
+                           :include '(#:*connection*
+                                      #:connection
+                                      #:connect #:disconnect #:reconnect #:ensure-connected
+                                      #:with-connection #:connectedp))
 
 (cl-reexport:reexport-from :redqing.job
                            :include '(#:job #:job-id #:job-options #:additional-options #:perform #:encode-job))

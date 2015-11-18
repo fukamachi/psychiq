@@ -4,7 +4,7 @@
         #:redqing.util
         #:redqing.specials)
   (:import-from #:redqing.connection
-                #:with-redis-connection
+                #:with-connection
                 #:make-connection
                 #:ensure-connected
                 #:disconnect)
@@ -80,7 +80,7 @@
     (disconnect connection)))
 
 (defun enqueue-jobs (conn now)
-  (with-redis-connection conn
+  (with-connection conn
     (loop for payload = (first
                          (red:zrangebyscore (redis-key "retry")
                                             "-inf"

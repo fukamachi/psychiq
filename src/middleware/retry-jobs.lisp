@@ -3,7 +3,7 @@
   (:use #:cl
         #:redqing.util)
   (:import-from #:redqing.connection
-                #:with-redis-connection)
+                #:with-connection)
   (:import-from #:redqing.job
                 #:job-id
                 #:job-options
@@ -63,7 +63,7 @@
                      delay)
            (let ((payload
                    (encode-object (encode-job job args))))
-             (with-redis-connection conn
+             (with-connection conn
                (red:zadd (redis-key "retry")
                          (princ-to-string retry-at)
                          payload)))))
@@ -86,7 +86,7 @@
             (job-id job))
   (let ((payload (encode-object (encode-job job args)))
         (now (timestamp-to-unix (now))))
-    (with-redis-transaction
+    (with-transaction
       (red:zadd (redis-key "dead")
                 now
                 payload)
