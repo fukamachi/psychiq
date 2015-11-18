@@ -1,16 +1,12 @@
 (in-package :cl-user)
 (defpackage redqing.queue
-  (:use #:cl)
+  (:use #:cl
+        #:redqing.util)
   (:import-from #:redqing.connection
                 #:connection
                 #:with-redis-connection)
   (:import-from #:redqing.coder
                 #:encode-object)
-  (:import-from #:redqing.util.redis
-                #:with-transaction
-                #:redis-key)
-  (:import-from #:redqing.util.assoc
-                #:aget)
   (:import-from #:local-time
                 #:timestamp-to-unix
                 #:now)
@@ -20,7 +16,7 @@
 (defun enqueue-to-queue (conn queue job-info)
   (check-type conn connection)
   (with-redis-connection conn
-    (with-transaction
+    (with-redis-transaction
       (setf (aget job-info "enqueued_at") (timestamp-to-unix (now)))
       (red:sadd (redis-key "queues") queue)
       (red:rpush (redis-key "queue" queue)

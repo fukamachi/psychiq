@@ -1,6 +1,7 @@
 (in-package :cl-user)
 (defpackage redqing.worker.scheduled
-  (:use #:cl)
+  (:use #:cl
+        #:redqing.util)
   (:import-from #:redqing.connection
                 #:with-redis-connection
                 #:make-connection
@@ -10,10 +11,6 @@
                 #:enqueue-to-queue)
   (:import-from #:redqing.coder
                 #:decode-object)
-  (:import-from #:redqing.util.assoc
-                #:aget)
-  (:import-from #:redqing.util.redis
-                #:redis-key)
   (:import-from #:local-time
                 #:timestamp-to-unix
                 #:now)

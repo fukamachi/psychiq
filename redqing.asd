@@ -26,34 +26,33 @@
                :vom
                :alexandria)
   :components ((:module "src"
-                :depends-on ("util")
                 :components
                 ((:file "redqing" :depends-on ("core" "client"))
                  (:file "client")
+                 (:file "worker" :depends-on ("core" "worker-core"))
                  (:module "core"
+                  :depends-on ("util")
                   :components
                   ((:file "connection")
                    (:file "job")
                    (:file "queue" :depends-on ("connection" "coder"))
                    (:file "coder")))
-                 (:file "worker" :depends-on ("worker-components"))
-                 (:module "worker-components"
+                 (:module "worker-core"
                   :pathname "worker"
-                  :depends-on ("core" "middleware")
+                  :depends-on ("core" "middleware" "util")
                   :components
                   ((:file "processor")
                    (:file "manager" :depends-on ("processor"))
                    (:file "scheduled")))
                  (:module "middleware"
-                  :depends-on ("core")
+                  :depends-on ("core" "util")
                   :components
-                  ((:file "retry-jobs")))))
-               (:module "util"
-                :pathname "src/util"
-                :components
-                ((:file "util")
-                 (:file "assoc")
-                 (:file "redis"))))
+                  ((:file "retry-jobs")))
+                 (:module "util"
+                  :components
+                  ((:file "util" :depends-on ("assoc" "redis"))
+                   (:file "assoc")
+                   (:file "redis"))))))
   :description "Redis-backed job queueing system"
   :long-description
   #.(with-open-file (stream (merge-pathnames

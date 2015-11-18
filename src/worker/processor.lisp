@@ -1,6 +1,7 @@
 (in-package :cl-user)
 (defpackage redqing.worker.processor
-  (:use #:cl)
+  (:use #:cl
+        #:redqing.util)
   (:import-from #:redqing.connection
                 #:connection
                 #:make-connection
@@ -14,11 +15,6 @@
                 #:*redqing-middleware-retry-jobs*)
   (:import-from #:redqing.coder
                 #:decode-object)
-  (:import-from #:redqing.util.assoc
-                #:aget)
-  (:import-from #:redqing.util.redis
-                #:redis-key
-                #:omit-redis-prefix)
   (:export #:processor
            #:make-processor
            #:processor-stopped-p

@@ -1,6 +1,7 @@
 (in-package :cl-user)
 (defpackage redqing.middleware.retry-jobs
-  (:use #:cl)
+  (:use #:cl
+        #:redqing.util)
   (:import-from #:redqing.connection
                 #:with-redis-connection)
   (:import-from #:redqing.job
@@ -9,13 +10,6 @@
                 #:encode-job)
   (:import-from #:redqing.coder
                 #:encode-object)
-  (:import-from #:redqing.util
-                #:symbol-name-with-package)
-  (:import-from #:redqing.util.assoc
-                #:aget)
-  (:import-from #:redqing.util.redis
-                #:with-transaction
-                #:redis-key)
   (:import-from #:local-time
                 #:timestamp-to-unix
                 #:now)
@@ -92,7 +86,7 @@
             (job-id job))
   (let ((payload (encode-object (encode-job job args)))
         (now (timestamp-to-unix (now))))
-    (with-transaction
+    (with-redis-transaction
       (red:zadd (redis-key "dead")
                 now
                 payload)

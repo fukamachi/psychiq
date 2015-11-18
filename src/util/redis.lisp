@@ -4,14 +4,14 @@
   (:import-from #:alexandria
                 #:with-gensyms
                 #:starts-with-subseq)
-  (:export #:with-transaction
+  (:export #:with-redis-transaction
 
            #:*redqing-namespace*
            #:redis-key
            #:omit-redis-prefix))
 (in-package :redqing.util.redis)
 
-(defmacro with-transaction (&body body)
+(defmacro with-redis-transaction (&body body)
   (with-gensyms (ok)
     `(let (,ok)
        (red:multi)

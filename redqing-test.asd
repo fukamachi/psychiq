@@ -15,8 +15,7 @@
                :prove)
   :components ((:module "t"
                 :components
-                ((:test-file "redqing")
-                 (:module "core"
+                ((:module "core"
                   :components
                   ((:test-file "coder")
                    (:test-file "connection")
