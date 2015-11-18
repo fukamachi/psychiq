@@ -6,6 +6,7 @@
                 #:when-let)
   (:export #:manager
            #:make-manager
+           #:manager-stopped-p
            #:start
            #:stop
            #:kill))
@@ -18,14 +19,6 @@
   (children '())
   (lock (bt:make-recursive-lock))
   (stopped-p t))
-
-(defmethod print-object ((manager manager) stream)
-  (print-unreadable-object (manager stream :type manager)
-    (with-slots (queues children stopped-p) manager
-      (format stream "QUEUES: ~A / COUNT: ~A / STATUS: ~:[RUNNING~;STOPPED~]"
-              queues
-              (length children)
-              stopped-p))))
 
 (defun make-manager (&key (host "localhost") (port 6379) queues (count 25))
   (let ((manager (%make-manager :host host :port port :queues queues)))
