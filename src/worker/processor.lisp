@@ -39,7 +39,8 @@
   (manager nil)
   (thread nil)
   (status :stopped)
-  (timeout 5))
+  (timeout 5)
+  (lock (bt:make-recursive-lock)))
 
 (defmethod print-object ((processor processor) stream)
   (print-unreadable-object (processor stream :type processor)
@@ -88,8 +89,9 @@
 (defgeneric finalize (processor)
   (:method ((processor processor))
     (disconnect (processor-connection processor))
-    (setf (processor-thread processor) nil)
-    (setf (processor-status processor) :stopped)
+    (bt:with-recursive-lock-held ((processor-lock processor))
+      (setf (processor-thread processor) nil)
+      (setf (processor-status processor) :stopped))
     t))
 
 (defgeneric start (processor)
@@ -132,7 +134,8 @@
     (when (and (bt:threadp thread)
                (bt:thread-alive-p thread))
       (loop while (or (bt:thread-alive-p thread)
-                      (not (eq (processor-status processor) :stopped)))
+                      (bt:with-recursive-lock-held ((processor-lock processor))
+                        (not (eq (processor-status processor) :stopped))))
             do (sleep 0.1)))))
 
 (defgeneric process-job (processor queue job-info)
