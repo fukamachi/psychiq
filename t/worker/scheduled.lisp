@@ -21,7 +21,7 @@
 (subtest "make-scheduled"
   (let ((scheduled (make-scheduled)))
     (is-type scheduled 'scheduled)
-    (ok (scheduled-stopped-p scheduled))
+    (is (scheduled-status scheduled) :stopped)
     (is (scheduled-thread scheduled) nil)))
 
 (subtest "start, stop & kill"
@@ -29,18 +29,19 @@
     (diag "start")
     (is (start scheduled) scheduled)
     (ok (bt:threadp (scheduled-thread scheduled)))
-    (is (scheduled-stopped-p scheduled) nil)
+    (is (scheduled-status scheduled) :running)
 
     (diag "stop")
     (stop scheduled)
-    (is (scheduled-stopped-p scheduled) t)
+    (is (scheduled-status scheduled) :stopping)
     (sleep 3)
+    (is (scheduled-status scheduled) :stopped)
     (is (scheduled-thread scheduled) nil)
 
     (diag "kill")
     (start scheduled)
     (kill scheduled)
-    (is (scheduled-stopped-p scheduled) t)))
+    (is (scheduled-status scheduled) :stopped)))
 
 (defclass deferred-job (redq:job) ())
 (defmethod redq:perform ((job deferred-job) &rest args)

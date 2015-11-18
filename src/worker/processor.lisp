@@ -18,7 +18,7 @@
                 #:decode-object)
   (:export #:processor
            #:make-processor
-           #:processor-stopped-p
+           #:processor-status
            #:processor-manager
            #:processor-connection
            #:processor-timeout
@@ -37,15 +37,15 @@
   (queues '() :type list)
   (manager nil)
   (thread nil)
-  (stopped-p t)
+  (status :stopped)
   (timeout 5))
 
 (defmethod print-object ((processor processor) stream)
   (print-unreadable-object (processor stream :type processor)
-    (with-slots (queues stopped-p) processor
-      (format stream "QUEUES: ~A / STATUS: ~:[RUNNING~;STOPPED~]"
+    (with-slots (queues status) processor
+      (format stream "QUEUES: ~A / STATUS: ~A"
               queues
-              stopped-p))))
+              status))))
 
 (defun make-processor (&key (host *default-redis-host*) (port *default-redis-port*) queues manager (timeout 5))
   (unless (and (listp queues)
@@ -76,7 +76,7 @@
 (defgeneric run (processor)
   (:method ((processor processor))
     (loop
-      until (processor-stopped-p processor)
+      while (eq (processor-status processor) :running)
       do (multiple-value-bind (job-info queue)
              (fetch-job processor)
            (if job-info
@@ -86,14 +86,14 @@
 
 (defgeneric finalize (processor)
   (:method ((processor processor))
-    (setf (processor-stopped-p processor) t)
     (disconnect (processor-connection processor))
     (setf (processor-thread processor) nil)
+    (setf (processor-status processor) :stopped)
     t))
 
 (defgeneric start (processor)
   (:method ((processor processor))
-    (setf (processor-stopped-p processor) nil)
+    (setf (processor-status processor) :running)
     (setf (processor-thread processor)
           (bt:make-thread
            (lambda ()
@@ -109,21 +109,22 @@
 
 (defgeneric stop (processor)
   (:method ((processor processor))
-    (when (processor-stopped-p processor)
+    (unless (eq (processor-status processor) :running)
       (return-from stop nil))
-    (setf (processor-stopped-p processor) t)
+    (setf (processor-status processor) :stopping)
     t))
 
 (defgeneric kill (processor)
   (:method ((processor processor))
-    (setf (processor-stopped-p processor) t)
+    (setf (processor-status processor) :stopping)
     (let ((thread (processor-thread processor)))
       (when (and (bt:threadp thread)
                  (bt:thread-alive-p thread))
         (bt:destroy-thread thread)
         (loop while (or (bt:thread-alive-p thread)
-                        (processor-thread processor))
-              do (sleep 0.1))))
+                        (not (eq (processor-status processor) :stopped)))
+              do (sleep 0.1))
+        (sleep 0.1)))
     t))
 
 (defgeneric process-job (processor queue job-info)

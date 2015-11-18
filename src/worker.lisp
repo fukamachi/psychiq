@@ -75,14 +75,14 @@
 (defun worker-status (worker)
   (let ((manager-stopped-p
           (redqing.worker.manager:manager-stopped-p (worker-manager worker)))
-        (scheduled-stopped-p
-          (redqing.worker.scheduled:scheduled-stopped-p (worker-scheduled worker))))
+        (scheduled-status
+          (redqing.worker.scheduled:scheduled-status (worker-scheduled worker))))
     (cond
       ((and manager-stopped-p
-            scheduled-stopped-p)
+            (eq scheduled-status :stopped))
        :stopped)
-      ((not (or manager-stopped-p
-                scheduled-stopped-p))
+      ((and (not manager-stopped-p)
+            (eq scheduled-status :running))
        :running)
       (t
        :stopping))))

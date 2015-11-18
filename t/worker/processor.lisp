@@ -27,7 +27,8 @@
   (let ((processor (make-processor :queues '("test"))))
     (is-type processor 'processor
              "Can make a PROCESSOR")
-    (ok (processor-stopped-p processor)
+    (is (processor-status processor)
+        :stopped
         "PROCESSOR is stopped at first")
     (is (princ-to-string processor)
         "#<PROCESSOR QUEUES: (test) / STATUS: STOPPED>")))
@@ -62,20 +63,21 @@
           (make-processor :queues '("test") :timeout 1)))
     (diag "start")
     (start processor)
-    (is (processor-stopped-p processor) nil)
+    (is (processor-status processor) :running)
     (ok (bt:thread-alive-p (processor-thread processor)))
     (diag "stop")
     (stop processor)
+    (is (processor-status processor) :stopping)
     (sleep 2)
-    (is (processor-stopped-p processor) t)
+    (is (processor-status processor) :stopped)
     (is (processor-thread processor) nil)
 
     (diag "kill")
     (start processor)
-    (is (processor-stopped-p processor) nil)
+    (is (processor-status processor) :running)
     (ok (bt:thread-alive-p (processor-thread processor)))
     (kill processor)
-    (is (processor-stopped-p processor) t)))
+    (is (processor-status processor) :stopped)))
 
 (subtest "perform"
   (let ((conn (connect)))

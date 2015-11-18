@@ -15,7 +15,7 @@
                 #:timestamp-to-unix
                 #:now)
   (:export #:scheduled
-           #:scheduled-stopped-p
+           #:scheduled-status
            #:start
            #:stop
            #:kill
@@ -25,31 +25,31 @@
 (defstruct (scheduled (:constructor %make-scheduled))
   connection
   thread
-  (stopped-p t))
+  (status :stopped))
 
 (defun make-scheduled (&key (host *default-redis-host*) (port *default-redis-port*))
   (let ((conn (make-connection :host host :port port)))
     (%make-scheduled :connection conn)))
 
 (defun start (scheduled)
-  (unless (scheduled-stopped-p scheduled)
+  (when (eq (scheduled-status scheduled) :running)
     (error "Scheduled thread is already running"))
 
-  (setf (scheduled-stopped-p scheduled) nil)
+  (setf (scheduled-status scheduled) :running)
   (let* ((conn (scheduled-connection scheduled))
          (thread
            (bt:make-thread
             (lambda ()
               (unwind-protect
-                   (loop until (scheduled-stopped-p scheduled)
+                   (loop while (eq (scheduled-status scheduled) :running)
                          do (handler-case (with-connection conn
                                             (enqueue-jobs (timestamp-to-unix (now))))
                               (error (e)
                                 (vom:error "~A" e)))
                             (sleep (scaled-poll-interval)))
-                (setf (scheduled-stopped-p scheduled) t)
                 (disconnect (scheduled-connection scheduled))
-                (setf (scheduled-thread scheduled) nil)))
+                (setf (scheduled-thread scheduled) nil)
+                (setf (scheduled-status scheduled) :stopped)))
             :initial-bindings `((*standard-output* . ,*standard-output*)
                                 (*error-output* . ,*error-output*))
             :name "redqing scheduled")))
@@ -64,20 +64,21 @@
        (/ poll-interval-average 2))))
 
 (defun stop (scheduled)
-  (when (scheduled-stopped-p scheduled)
+  (unless (eq (scheduled-status scheduled) :running)
     (return-from stop nil))
 
-  (setf (scheduled-stopped-p scheduled) t))
+  (setf (scheduled-status scheduled) :stopping))
 
 (defun kill (scheduled)
-  (setf (scheduled-stopped-p scheduled) t)
+  (setf (scheduled-status scheduled) :stopping)
   (let ((thread (scheduled-thread scheduled)))
     (when (and (bt:threadp thread)
                (bt:thread-alive-p thread))
       (bt:destroy-thread thread)
       (loop while (or (bt:thread-alive-p thread)
-                      (scheduled-thread scheduled))
-            do (sleep 0.1))))
+                      (not (eq (scheduled-status scheduled) :stopped)))
+            do (sleep 0.1))
+      (sleep 0.1)))
   t)
 
 (defun enqueue-jobs (now)

@@ -28,7 +28,7 @@
 
     (diag "stop")
     (ok (stop worker))
-    (is (worker-status worker) :stopped)
+    (is (worker-status worker) :stopping)
     (sleep 1.2)
 
     (diag "kill")
