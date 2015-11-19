@@ -30,7 +30,7 @@
   (enqueue-to *default-queue-name* job-class args))
 
 (defun enqueue-to (queue job-class &optional args)
-  (let ((job-info (encode-job (make-instance job-class) args)))
+  (let ((job-info (encode-job job-class args)))
     (with-connection *connection*
       (enqueue-to-queue queue job-info))))
 

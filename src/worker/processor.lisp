@@ -120,19 +120,21 @@
 
 (defgeneric process-job (processor queue job-info)
   (:method ((processor processor) queue job-info)
-    (let ((job (decode-job job-info))
-          (args (aget job-info "args")))
-      (vom:info "got: ~A ~S" job args)
-      (handler-bind ((error
-                       (lambda (condition)
-                         (vom:warn "Job ~A ~S failed with ~S: ~A"
-                                   job args (class-name (class-of condition)) condition))))
-        ;; Applying default middlewares
-        (funcall
-         (funcall *redqing-middleware-retry-jobs*
-                  (lambda (job args)
-                    (apply #'perform-job processor queue job args)))
-         (processor-connection processor) job queue args)))))
+    (vom:info "Got: ~S" job-info)
+    (handler-bind ((error
+                     (lambda (condition)
+                       (vom:warn "Job ~A (~{~S~^ ~}) failed with ~S: ~A"
+                                 (aget job-info "class")
+                                 (aget job-info "args")
+                                 (class-name (class-of condition)) condition))))
+      ;; Applying default middlewares
+      (funcall
+       (funcall *redqing-middleware-retry-jobs*
+                (lambda (job-info)
+                  (let ((job (decode-job job-info))
+                        (args (aget job-info "args")))
+                    (apply #'perform-job processor queue job args))))
+       (processor-connection processor) job-info queue))))
 
 (defgeneric perform-job (processor queue job &rest args)
   (:method ((processor processor) queue job &rest args)

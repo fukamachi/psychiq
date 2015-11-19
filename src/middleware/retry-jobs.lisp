@@ -4,10 +4,6 @@
         #:redqing.util)
   (:import-from #:redqing.connection
                 #:with-connection)
-  (:import-from #:redqing.job
-                #:job-id
-                #:job-options
-                #:encode-job)
   (:import-from #:redqing.coder
                 #:encode-object)
   (:import-from #:local-time
@@ -22,15 +18,15 @@
 
 (defparameter *redqing-middleware-retry-jobs*
   (lambda (next)
-    (lambda (conn job queue args)
+    (lambda (conn job-info queue)
       (handler-bind ((error
                        (lambda (e)
-                         (attempt-retry conn queue job args e))))
-        (funcall next job args)))))
+                         (attempt-retry conn queue job-info e))))
+        (funcall next job-info)))))
 
-(defun attempt-retry (conn queue job args e)
-  (let* ((options (job-options job))
-         (max-retries (aget options "max_retries")))
+(defun attempt-retry (conn queue job-info e)
+  (let ((options '())
+        (max-retries (aget job-info "max_retries")))
     (setf max-retries
           (if (numberp max-retries)
               max-retries
@@ -52,7 +48,8 @@
                     `(("failed_at" . ,(timestamp-to-unix (now)))
                       ("retry_count" . 0)))))
 
-      (setf (job-options job) options)
+      (loop for (option . value) in options
+            do (setf (aget job-info option) value))
 
       (cond
         ((< retry-count max-retries)
@@ -61,14 +58,13 @@
            (vom:info "Failure! Retry ~A in ~A seconds"
                      retry-count
                      delay)
-           (let ((payload
-                   (encode-object (encode-job job args))))
+           (let ((payload (encode-object job-info)))
              (with-connection conn
                (red:zadd (redis-key "retry")
                          (princ-to-string retry-at)
                          payload)))))
         (t
-         (send-to-morgue conn job args))))))
+         (send-to-morgue conn job-info))))))
 
 (defun delay-for (retry-count)
   (+ (expt retry-count 4) 15 (* (random 30) (1+ retry-count))))
@@ -80,11 +76,11 @@
 (defparameter *dead-max-jobs*
   10000)
 
-(defun send-to-morgue (conn job args)
+(defun send-to-morgue (conn job-info)
   (vom:info "Adding dead ~S job ~S"
-            (class-name (class-of job))
-            (job-id job))
-  (let ((payload (encode-object (encode-job job args)))
+            (aget job-info "class")
+            (aget job-info "jid"))
+  (let ((payload (encode-object job-info))
         (now (timestamp-to-unix (now))))
     (with-connection conn
       (with-redis-transaction
