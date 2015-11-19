@@ -1,9 +1,12 @@
 (in-package :cl-user)
 (defpackage redqing.middleware.retry-jobs
   (:use #:cl
+        #:redqing.specials
         #:redqing.util)
   (:import-from #:redqing.connection
                 #:with-connection)
+  (:import-from #:redqing.job
+                #:max-retries)
   (:import-from #:redqing.coder
                 #:encode-object)
   (:import-from #:local-time
@@ -14,19 +17,21 @@
   (:export #:*redqing-middleware-retry-jobs*))
 (in-package :redqing.middleware.retry-jobs)
 
-(defparameter *default-max-retry-attempts* 25)
-
 (defparameter *redqing-middleware-retry-jobs*
   (lambda (next)
     (lambda (conn job-info queue)
       (handler-bind ((error
                        (lambda (e)
-                         (attempt-retry conn queue job-info e))))
+                         (let ((job-class
+                                  (ignore-errors
+                                   (read-from-string (aget job-info "class")))))
+                           (when job-class
+                             (attempt-retry conn queue job-class job-info e))))))
         (funcall next job-info)))))
 
-(defun attempt-retry (conn queue job-info e)
+(defun attempt-retry (conn queue job-class job-info e)
   (let ((options '())
-        (max-retries (aget job-info "max_retries")))
+        (max-retries (max-retries job-class)))
     (setf max-retries
           (if (numberp max-retries)
               max-retries

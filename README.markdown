@@ -54,6 +54,13 @@ Options:
     -h, --help                Show help
 ```
 
+### Max retry attempts
+
+```common-lisp
+(defmethod redq:max-retries ((job-class (eql 'deferred-job)))
+  1000)
+```
+
 ## Installation
 
 ```

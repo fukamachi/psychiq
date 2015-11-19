@@ -12,7 +12,7 @@
                                       #:with-connection #:connectedp))
 
 (cl-reexport:reexport-from :redqing.job
-                           :include '(#:job #:job-id #:perform))
+                           :include '(#:job #:job-id #:perform #:max-retries))
 
 (cl-reexport:reexport-from :redqing.client
                            :include '(#:enqueue #:enqueue-to #:dequeue

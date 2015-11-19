@@ -1,6 +1,7 @@
 (in-package :cl-user)
 (defpackage redqing.job
-  (:use #:cl)
+  (:use #:cl
+        #:redqing.specials)
   (:import-from #:redqing.util
                 #:symbol-name-with-package)
   (:import-from #:local-time
@@ -11,6 +12,7 @@
   (:export #:job
            #:job-id
            #:perform
+           #:max-retries
            #:encode-job
            #:decode-job))
 (in-package :redqing.job)
@@ -27,6 +29,11 @@
   (:method ((job job) &rest args)
     (declare (ignore args))
     (error "PEFORM is not implemented for ~S" (class-name (class-of job)))))
+
+(defgeneric max-retries (job-class)
+  (:method ((job-class symbol))
+    (assert (subtypep job-class 'job))
+    *default-max-retry-attempts*))
 
 (defun encode-job (job-class args)
   `(("class" . ,(symbol-name-with-package job-class))
