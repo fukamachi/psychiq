@@ -17,6 +17,7 @@
 (cl-reexport:reexport-from :redqing.client
                            :include '(#:enqueue #:enqueue-to #:dequeue
                                       #:all-queues #:queue-length #:queue-empty-p #:delete-queue #:slice-queue #:peek-queue
-                                      #:all-retries #:retry-length))
+                                      #:all-retries #:retry-length
+                                      #:all-dead-jobs))
 
 (cl-reexport:reexport-from :redqing.specials)

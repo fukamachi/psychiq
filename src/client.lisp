@@ -25,7 +25,8 @@
            #:slice-queue
            #:peek-queue
            #:all-retries
-           #:retry-length))
+           #:retry-length
+           #:all-dead-jobs))
 (in-package :redqing.client)
 
 (defun enqueue (job-class &optional args)
@@ -60,21 +61,29 @@
       (red:srem (redis-key "queues") queue)))
   (values))
 
+(defun decode-objects (objects)
+  (mapl (lambda (objects)
+          (rplaca objects (decode-object (first objects))))
+        objects))
+
 (defun slice-queue (queue start &optional (end -1))
-  (mapl (lambda (jobs)
-          (rplaca jobs (decode-object (first jobs))))
-        (with-connection *connection*
-          (red:lrange (redis-key "queue" queue) start end))))
+  (decode-objects
+   (with-connection *connection*
+     (red:lrange (redis-key "queue" queue) start end))))
 
 (defun peek-queue (queue &optional (start 0) (count 1))
   (first (slice-queue queue start (1- count))))
 
 (defun all-retries ()
-  (mapl (lambda (jobs)
-          (rplaca jobs (decode-object (first jobs))))
-        (with-connection *connection*
-          (red:zrange (redis-key "retry") 0 -1))))
+  (decode-objects
+   (with-connection *connection*
+     (red:zrange (redis-key "retry") 0 -1))))
 
 (defun retry-length ()
   (with-connection *connection*
     (red:zcard (redis-key "retry"))))
+
+(defun all-dead-jobs ()
+  (decode-objects
+   (with-connection *connection*
+     (red:zrange (redis-key "dead") 0 -1))))
