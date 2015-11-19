@@ -23,7 +23,9 @@
            #:queue-empty-p
            #:delete-queue
            #:slice-queue
-           #:peek-queue))
+           #:peek-queue
+           #:all-retries
+           #:retry-length))
 (in-package :redqing.client)
 
 (defun enqueue (job-class &optional args)
@@ -66,3 +68,13 @@
 
 (defun peek-queue (queue &optional (start 0) (count 1))
   (first (slice-queue queue start (1- count))))
+
+(defun all-retries ()
+  (mapl (lambda (jobs)
+          (rplaca jobs (decode-object (first jobs))))
+        (with-connection *connection*
+          (red:zrange (redis-key "retry") 0 -1))))
+
+(defun retry-length ()
+  (with-connection *connection*
+    (red:zcard (redis-key "retry"))))
