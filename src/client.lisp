@@ -19,7 +19,7 @@
            #:enqueue-to
            #:dequeue
            #:all-queues
-           #:queue-size
+           #:queue-length
            #:queue-empty-p
            #:delete-queue
            #:slice-queue
@@ -46,12 +46,12 @@
   (with-connection *connection*
     (red:smembers (redis-key "queues"))))
 
-(defun queue-size (queue)
+(defun queue-length (queue)
   (with-connection *connection*
     (red:llen (redis-key "queue" queue))))
 
 (defun queue-empty-p (queue)
-  (zerop (queue-size queue)))
+  (zerop (queue-length queue)))
 
 (defun delete-queue (queue)
   (with-connection *connection*
