@@ -17,8 +17,6 @@
                 #:dequeue-from-queue)
   (:import-from #:redqing.middleware.retry-jobs
                 #:*redqing-middleware-retry-jobs*)
-  (:import-from #:redqing.coder
-                #:decode-object)
   (:export #:processor
            #:make-processor
            #:processor-status
@@ -59,17 +57,15 @@
 
 (defgeneric fetch-job (processor)
   (:method ((processor processor))
-    (multiple-value-bind (payload queue)
+    (multiple-value-bind (job-info queue)
         ;; TODO: allow to shuffle the queues
         (with-connection (processor-connection processor)
           (dequeue-from-queue (processor-queues processor)
                               :timeout (processor-timeout processor)))
-      (if payload
+      (if job-info
           (progn
             (vom:debug "Found job on ~A" queue)
-            (values
-             (decode-object payload)
-             queue))
+            (values job-info queue))
           nil))))
 
 (defgeneric run (processor)
