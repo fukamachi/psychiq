@@ -29,14 +29,14 @@
                 :depends-on ("src/specials")
                 :components
                 ((:file "redqing" :depends-on ("core" "client"))
-                 (:file "client")
+                 (:file "client" :depends-on ("core"))
                  (:file "worker" :depends-on ("core" "worker-core"))
                  (:module "core"
                   :depends-on ("util")
                   :components
                   ((:file "connection")
                    (:file "job")
-                   (:file "queue" :depends-on ("connection" "coder"))
+                   (:file "queue" :depends-on ("coder"))
                    (:file "coder")))
                  (:module "worker-core"
                   :pathname "worker"

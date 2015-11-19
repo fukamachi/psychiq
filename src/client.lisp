@@ -2,6 +2,9 @@
 (defpackage redqing.client
   (:use #:cl
         #:redqing.specials)
+  (:import-from #:redqing.connection
+                #:with-connection
+                #:*connection*)
   (:import-from #:redqing.job
                 #:encode-job)
   (:import-from #:redqing.queue
@@ -17,4 +20,5 @@
 
 (defun enqueue-to (queue job-class &optional args)
   (let ((job-info (encode-job (make-instance job-class) args)))
-    (enqueue-to-queue queue job-info)))
+    (with-connection *connection*
+      (enqueue-to-queue queue job-info))))
