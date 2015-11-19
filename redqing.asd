@@ -23,6 +23,7 @@
                :local-time
                :cl-reexport
                :bordeaux-threads
+               :marshal
                :vom
                :alexandria)
   :components ((:module "src"

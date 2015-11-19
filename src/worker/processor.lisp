@@ -123,16 +123,15 @@
     (vom:info "Got: ~S" job-info)
     (handler-bind ((error
                      (lambda (condition)
-                       (vom:warn "Job ~A (~{~S~^ ~}) failed with ~S: ~A"
+                       (vom:warn "Job ~A failed with ~S: ~A"
                                  (aget job-info "class")
-                                 (aget job-info "args")
                                  (class-name (class-of condition)) condition))))
       ;; Applying default middlewares
       (funcall
        (funcall *redqing-middleware-retry-jobs*
                 (lambda (job-info)
-                  (let ((job (decode-job job-info))
-                        (args (aget job-info "args")))
+                  (multiple-value-bind (job args)
+                      (decode-job job-info)
                     (apply #'perform-job processor queue job args))))
        (processor-connection processor) job-info queue))))
 

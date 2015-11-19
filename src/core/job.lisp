@@ -31,12 +31,12 @@
 (defgeneric encode-job (job-class args)
   (:method ((job-class symbol) args)
     `(("class" . ,(symbol-name-with-package job-class))
-      ("args" . ,args)
+      ("args" . ,(prin1-to-string (marshal:marshal args)))
       ("jid" . ,(generate-random-id))
       ("created_at" . ,(timestamp-to-unix (now)))))
   (:method ((job job) args)
     `(("class" . ,(symbol-name-with-package (class-name (class-of job))))
-      ("args" . ,args)
+      ("args" . ,(prin1-to-string (marshal:marshal args)))
       ("jid" . ,(job-id job))
       ("created_at" . ,(timestamp-to-unix (now))))))
 
@@ -51,4 +51,5 @@
       (let ((job (make-instance class
                                 :id (cdr jid))))
         (check-type job job)
-        job))))
+        (values job
+                (marshal:unmarshal (read-from-string (cdr args))))))))
