@@ -33,5 +33,5 @@
     (if ret
         (destructuring-bind (queue payload) ret
           (values (decode-object payload)
-                  (omit-redis-prefix queue)))
+                  (omit-redis-prefix queue "queue")))
         nil)))

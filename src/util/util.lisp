@@ -14,5 +14,3 @@
     (format nil "~A::~A"
             (package-name package)
             (symbol-name symbol))))
-
-

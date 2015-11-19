@@ -30,7 +30,7 @@
           keys))
 
 (defun omit-redis-prefix (key &rest prefixes)
-  (let ((prefix (format nil (apply #'redis-key prefixes) ":")))
+  (let ((prefix (concatenate 'string (apply #'redis-key prefixes) ":")))
     (unless (starts-with-subseq prefix key)
       (error "~S does not start with ~S" key prefix))
     (subseq key (length prefix))))
