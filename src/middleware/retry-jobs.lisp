@@ -38,7 +38,7 @@
 
     (setf (aget options "queue") queue)
 
-    (let ((retry-count (aget options "retry_count")))
+    (let ((retry-count (aget job-info "retry_count")))
       (if retry-count
           (setf (aget options "retry_count") (1+ retry-count)
                 (aget options "retried_at") (timestamp-to-unix (now)))
