@@ -68,7 +68,7 @@
                          (princ-to-string retry-at)
                          payload)))))
         (t
-         (send-to-morgue job args))))))
+         (send-to-morgue conn job args))))))
 
 (defun delay-for (retry-count)
   (+ (expt retry-count 4) 15 (* (random 30) (1+ retry-count))))
@@ -80,19 +80,20 @@
 (defparameter *dead-max-jobs*
   10000)
 
-(defun send-to-morgue (job args)
+(defun send-to-morgue (conn job args)
   (vom:info "Adding dead ~S job ~S"
             (class-name (class-of job))
             (job-id job))
   (let ((payload (encode-object (encode-job job args)))
         (now (timestamp-to-unix (now))))
-    (with-transaction
-      (red:zadd (redis-key "dead")
-                now
-                payload)
-      (red:zremrangebyscore (redis-key "dead")
-                            "-inf"
-                            (- now *dead-timeout-in-seconds*))
-      (red:zremrangebyrank (redis-key "dead")
-                           0
-                           -10000))))
+    (with-connection conn
+      (with-redis-transaction
+        (red:zadd (redis-key "dead")
+                  now
+                  payload)
+        (red:zremrangebyscore (redis-key "dead")
+                              "-inf"
+                              (- now *dead-timeout-in-seconds*))
+        (red:zremrangebyrank (redis-key "dead")
+                             0
+                             -10000)))))
