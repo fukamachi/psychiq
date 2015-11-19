@@ -94,6 +94,7 @@
       (open-connection conn)))
 
 (defun connect-toplevel (&rest initargs &key host port)
+  (declare (ignore host port))
   (when (and (boundp '*connection*)
              *connection*)
     (cerror "*connection* is already bound to ~A" *connection*))
