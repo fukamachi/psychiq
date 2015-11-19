@@ -13,9 +13,9 @@ exec ros -Q -- $0 "$@"
 Options:
     -o, --host HOST           Redis server host
     -p, --port PORT           Redis server port
-    -q, --queue QUEUE         Queues to process (Can be specified multiple times)
-    -c, --concurrency INT     Processor threads to use
-    -s, --system SYSTEM       ASDF system to load before starting
+    -q, --queue QUEUE         Queues to process (several -q's allowed)
+    -c, --concurrency INT     Processor threads to use (default: 25)
+    -s, --system SYSTEM       ASDF system to load before starting (several -s's allowed)
     -h, --help                Show help
 ")
   (uiop:quit -1))
