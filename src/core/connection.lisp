@@ -97,10 +97,16 @@
   (declare (ignore host port))
   (when (and (boundp '*connection*)
              *connection*)
-    (cerror "*connection* is already bound to ~A" *connection*))
-  (setf *connection* (apply #'connect initargs)))
+    (cerror "Disconnect the existing connection"
+            "*CONNECTION* is already bound to ~A"
+            *connection*)
+    (disconnect *connection*))
+  (setf *connection* (apply #'connect initargs))
+  (setf redis::*connection* (redis-connection *connection*))
+  *connection*)
 
 (defun disconnect-toplevel ()
   (when (boundp '*connection*)
     (disconnect *connection*)
+    (setf redis::*connection* nil)
     (makunbound '*connection*)))
