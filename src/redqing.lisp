@@ -15,6 +15,7 @@
                            :include '(#:job #:job-id #:job-options #:additional-options #:perform #:encode-job))
 
 (cl-reexport:reexport-from :redqing.client
-                           :include '(#:enqueue #:enqueue-to))
+                           :include '(#:enqueue #:enqueue-to #:dequeue
+                                      #:all-queues #:queue-size #:queue-empty-p #:delete-queue #:slice-queue #:peek-queue))
 
 (cl-reexport:reexport-from :redqing.specials)

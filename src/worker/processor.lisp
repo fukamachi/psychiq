@@ -3,12 +3,14 @@
   (:use #:cl
         #:redqing.util
         #:redqing.specials)
+  (:import-from #:redqing.client
+                #:dequeue)
   (:import-from #:redqing.connection
+                #:*connection*
                 #:connection
                 #:make-connection
                 #:ensure-connected
-                #:disconnect
-                #:with-connection)
+                #:disconnect)
   (:import-from #:redqing.job
                 #:perform
                 #:decode-job)
@@ -56,21 +58,17 @@
 
 (defgeneric fetch-job (processor)
   (:method ((processor processor))
-    (let ((ret
-            (with-connection (processor-connection processor)
-              (apply #'red:blpop
-                     (nconc
-                      (mapcar (lambda (queue)
-                                (redis-key "queue" queue))
-                              ;; TODO: allow to shuffle the queues
-                              (processor-queues processor))
-                      (list (processor-timeout processor)))))))
-      (if ret
-          (destructuring-bind (queue payload) ret
+    (multiple-value-bind (payload queue)
+        ;; TODO: allow to shuffle the queues
+        (let ((*connection* (processor-connection processor)))
+          (dequeue (processor-queues processor)
+                   (processor-timeout processor)))
+      (if payload
+          (progn
             (vom:debug "Found job on ~A" queue)
             (values
              (decode-object payload)
-             (omit-redis-prefix queue "queue")))
+             queue))
           nil))))
 
 (defgeneric run (processor)

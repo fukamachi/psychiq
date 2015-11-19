@@ -40,7 +40,7 @@
                    (:file "coder")))
                  (:module "worker-core"
                   :pathname "worker"
-                  :depends-on ("core" "middleware" "util")
+                  :depends-on ("core" "client" "middleware" "util")
                   :components
                   ((:file "processor")
                    (:file "manager" :depends-on ("processor"))
