@@ -26,9 +26,7 @@
            #:peek-queue))
 (in-package :redqing.client)
 
-(defgeneric enqueue (job-class &optional args))
-
-(defmethod enqueue ((job-class symbol) &optional args)
+(defun enqueue (job-class &optional args)
   (enqueue-to *default-queue-name* job-class args))
 
 (defun enqueue-to (queue job-class &optional args)
