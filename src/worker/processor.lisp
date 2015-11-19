@@ -3,17 +3,18 @@
   (:use #:cl
         #:redqing.util
         #:redqing.specials)
-  (:import-from #:redqing.client
-                #:dequeue)
   (:import-from #:redqing.connection
                 #:*connection*
                 #:connection
                 #:make-connection
                 #:ensure-connected
-                #:disconnect)
+                #:disconnect
+                #:with-connection)
   (:import-from #:redqing.job
                 #:perform
                 #:decode-job)
+  (:import-from #:redqing.queue
+                #:dequeue-from-queue)
   (:import-from #:redqing.middleware.retry-jobs
                 #:*redqing-middleware-retry-jobs*)
   (:import-from #:redqing.coder
@@ -60,9 +61,9 @@
   (:method ((processor processor))
     (multiple-value-bind (payload queue)
         ;; TODO: allow to shuffle the queues
-        (let ((*connection* (processor-connection processor)))
-          (dequeue (processor-queues processor)
-                   (processor-timeout processor)))
+        (with-connection (processor-connection processor)
+          (dequeue-from-queue (processor-queues processor)
+                              :timeout (processor-timeout processor)))
       (if payload
           (progn
             (vom:debug "Found job on ~A" queue)

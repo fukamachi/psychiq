@@ -11,7 +11,8 @@
   (:import-from #:redqing.coder
                 #:decode-object)
   (:import-from #:redqing.queue
-                #:enqueue-to-queue)
+                #:enqueue-to-queue
+                #:dequeue-from-queue)
   (:import-from #:alexandria
                 #:ensure-list)
   (:export #:enqueue
@@ -38,18 +39,8 @@
 (defun dequeue (&optional
                   (queue-or-queues *default-queue-name*)
                   (timeout 5))
-  (let ((ret
-          (with-connection *connection*
-            (apply #'red:blpop
-                   (nconc
-                    (mapcar (lambda (queue)
-                              (redis-key "queue" queue))
-                            (ensure-list queue-or-queues))
-                    (list timeout))))))
-    (if ret
-        (destructuring-bind (queue payload) ret
-          (values payload (omit-redis-prefix queue)))
-        nil)))
+  (with-connection *connection*
+    (dequeue-from-queue queue-or-queues :timeout timeout)))
 
 (defun all-queues ()
   (with-connection *connection*
