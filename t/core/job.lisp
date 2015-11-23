@@ -31,7 +31,7 @@
     (is-type job-info 'list)
     (is (aget job-info "class") "REDQING-TEST.JOB::DEFERRED-JOB"
         "class")
-    (is (aget job-info "args") "(:PCODE 1 (:LIST 1))"
+    (is (aget job-info "args") nil
         "args")
     (ok (aget job-info "jid") "jid")
     (ok (aget job-info "created_at") "created_at")))
@@ -41,7 +41,7 @@
     (is-type job-info 'list)
     (is (aget job-info "class") "REDQING-TEST.JOB::DEFERRED-JOB"
         "class")
-    (is (aget job-info "args") "(:PCODE 1 (:LIST 1 1 (:SIMPLE-STRING 2 \"2\")))"
+    (is (aget job-info "args") '("(:PCODE 1 1)" "(:PCODE 1 (:SIMPLE-STRING 1 \"2\"))")
         "args")
     (ok (aget job-info "jid") "jid")
     (ok (aget job-info "created_at") "created_at")))

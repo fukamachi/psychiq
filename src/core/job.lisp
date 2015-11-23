@@ -37,7 +37,9 @@
 
 (defun encode-job (job-class args)
   `(("class" . ,(symbol-name-with-package job-class))
-    ("args" . ,(prin1-to-string (marshal:marshal args)))
+    ("args" . ,(mapcar (lambda (arg)
+                         (prin1-to-string (marshal:marshal arg)))
+                       args))
     ("jid" . ,(generate-random-id))
     ("created_at" . ,(timestamp-to-unix (now)))))
 
@@ -53,4 +55,6 @@
                                 :id (cdr jid))))
         (check-type job job)
         (values job
-                (marshal:unmarshal (read-from-string (cdr args))))))))
+                (mapcar (lambda (arg)
+                          (marshal:unmarshal (read-from-string arg)))
+                        (cdr args)))))))
