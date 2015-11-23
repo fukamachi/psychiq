@@ -137,5 +137,6 @@
 
 (defgeneric perform-job (processor queue job &rest args)
   (:method ((processor processor) queue job &rest args)
-    (declare (ignore processor queue))
-    (apply #'perform job args)))
+    (declare (ignore queue))
+    (with-connection (processor-connection processor)
+      (apply #'perform job args))))
