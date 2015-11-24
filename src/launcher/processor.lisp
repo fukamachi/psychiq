@@ -128,14 +128,14 @@
                        (vom:warn "Job ~A failed with ~S: ~A"
                                  (aget job-info "class")
                                  (class-name (class-of condition)) condition))))
-      ;; Applying default middlewares
-      (funcall
-       (funcall *psychiq-middleware-retry-jobs*
-                (lambda (job-info)
-                  (multiple-value-bind (worker args)
-                      (decode-job job-info)
-                    (apply #'perform-job processor queue worker args))))
-       (processor-connection processor) job-info queue))))
+      (multiple-value-bind (worker args)
+          (decode-job job-info)
+        ;; Applying default middlewares
+        (funcall
+         (funcall *psychiq-middleware-retry-jobs*
+                  (lambda (worker args)
+                    (apply #'perform-job processor queue worker args)))
+         (processor-connection processor) worker args job-info queue)))))
 
 (defgeneric perform-job (processor queue worker &rest args)
   (:method ((processor processor) queue worker &rest args)

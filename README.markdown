@@ -57,7 +57,7 @@ Options:
 ### Max retry attempts
 
 ```common-lisp
-(defmethod psy:max-retries ((worker-class (eql 'my-worker)))
+(defmethod psy:max-retries ((worker my-worker))
   1000)
 ```
 

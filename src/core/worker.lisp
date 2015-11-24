@@ -26,9 +26,8 @@
     (declare (ignore args))
     (error "PEFORM is not implemented for ~S" (class-name (class-of worker)))))
 
-(defgeneric max-retries (worker-class)
-  (:method ((worker-class symbol))
-    (assert (subtypep worker-class 'worker))
+(defgeneric max-retries (worker)
+  (:method ((worker worker))
     *default-max-retry-attempts*))
 
 (defun encode-job (worker-class args)

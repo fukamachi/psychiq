@@ -19,19 +19,15 @@
 
 (defparameter *psychiq-middleware-retry-jobs*
   (lambda (next)
-    (lambda (conn job-info queue)
+    (lambda (conn worker args job-info queue)
       (handler-bind ((error
                        (lambda (e)
-                         (let ((worker-class
-                                  (ignore-errors
-                                   (read-from-string (aget job-info "class")))))
-                           (when worker-class
-                             (attempt-retry conn queue worker-class job-info e))))))
-        (funcall next job-info)))))
+                         (attempt-retry conn queue worker job-info e))))
+        (funcall next worker args)))))
 
-(defun attempt-retry (conn queue worker-class job-info e)
+(defun attempt-retry (conn queue worker job-info e)
   (let ((options '())
-        (max-retries (max-retries worker-class)))
+        (max-retries (max-retries worker)))
     (setf max-retries
           (if (numberp max-retries)
               max-retries
