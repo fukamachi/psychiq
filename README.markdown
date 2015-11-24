@@ -4,7 +4,7 @@
 [![Coverage Status](https://coveralls.io/repos/fukamachi/psychiq/badge.svg?branch=master)](https://coveralls.io/r/fukamachi/psychiq)
 [![Quicklisp dist](http://quickdocs.org/badge/psychiq.svg)](http://quickdocs.org/psychiq/)
 
-Psychiq is a Redis-backed job queueing system written in Common Lisp.
+Psychiq provides background job processing for Common Lisp applications inspired by Ruby's [Sidekiq](http://sidekiq.org).
 
 ## Warning
 
@@ -48,9 +48,9 @@ Usage: psychiq [option...]
 Options:
     -o, --host HOST           Redis server host
     -p, --port PORT           Redis server port
-    -q, --queue QUEUE         Queues to process (Can be specified multiple times)
-    -c, --concurrency INT     Processor threads to use
-    -s, --system SYSTEM       ASDF system to load before starting
+    -q, --queue QUEUE         Queues to process (several -q's allowed)
+    -c, --concurrency INT     Processor threads to use (default: 25)
+    -s, --system SYSTEM       ASDF system to load before starting (several -s's allowed)
     -h, --help                Show help
 ```
 
@@ -60,6 +60,11 @@ Options:
 (defmethod psy:max-retries ((worker-class (eql 'my-worker)))
   1000)
 ```
+
+## Requirements
+
+* Redis
+* [Roswell](https://github.com/snmsts/roswell) for command-line launcher script.
 
 ## Installation
 
