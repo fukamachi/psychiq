@@ -43,8 +43,8 @@
     (kill scheduled)
     (ok (find (scheduled-status scheduled) '(:stopping :stopped)))))
 
-(defclass deferred-job (psy:job) ())
-(defmethod psy:perform ((job deferred-job) &rest args)
+(defclass my-worker (psy:worker) ())
+(defmethod psy:perform ((worker my-worker) &rest args)
   (declare (ignore args))
   "OK")
 
@@ -57,7 +57,7 @@
            (red:del (redis-key "queue" "test"))
            (red:zadd (redis-key "retry")
                      now
-                     "{\"class\":\"PSYCHIQ-TEST.LAUNCHER.SCHEDULED::DEFERRED-JOB\",\"args\":[],\"jid\":\"b1ly5y10yia9\",\"enqueued_at\":1447827023,\"created_at\":1447827023,\"error_message\":\"Failed\",\"error_class\":\"COMMON-LISP::SIMPLE-ERROR\",\"failed_at\":1447827023,\"retry_count\":0,\"queue\":\"test\"}")
+                     "{\"class\":\"PSYCHIQ-TEST.LAUNCHER.SCHEDULED::MY-WORKER\",\"args\":[],\"jid\":\"b1ly5y10yia9\",\"enqueued_at\":1447827023,\"created_at\":1447827023,\"error_message\":\"Failed\",\"error_class\":\"COMMON-LISP::SIMPLE-ERROR\",\"failed_at\":1447827023,\"retry_count\":0,\"queue\":\"test\"}")
            (enqueue-jobs (1+ now))
            (is (red:zrange (redis-key "retry") 0 1) nil)
            (let ((jobs (red:lrange (redis-key "queue" "test") 0 -1)))

@@ -7,10 +7,10 @@
 
 (plan 2)
 
-(is (symbol-name-with-package 'deferred-job)
-    "PSYCHIQ-TEST.UTIL::DEFERRED-JOB")
+(is (symbol-name-with-package 'my-worker)
+    "PSYCHIQ-TEST.UTIL::MY-WORKER")
 
-(is-error (symbol-name-with-package '#:deferred-job)
+(is-error (symbol-name-with-package '#:my-worker)
           'simple-error)
 
 (finalize)

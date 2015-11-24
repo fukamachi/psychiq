@@ -36,7 +36,7 @@
                   :depends-on ("util")
                   :components
                   ((:file "connection")
-                   (:file "job")
+                   (:file "worker")
                    (:file "queue" :depends-on ("coder"))
                    (:file "coder")))
                  (:module "launcher-core"

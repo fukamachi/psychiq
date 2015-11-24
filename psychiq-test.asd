@@ -20,7 +20,7 @@
                   ((:test-file "coder")
                    (:test-file "connection")
                    (:test-file "queue")
-                   (:test-file "job")))
+                   (:test-file "worker")))
                  (:module "launcher"
                   :components
                   ((:test-file "processor")

@@ -10,7 +10,7 @@
                 #:ensure-connected
                 #:disconnect
                 #:with-connection)
-  (:import-from #:psychiq.job
+  (:import-from #:psychiq.worker
                 #:perform
                 #:decode-job)
   (:import-from #:psychiq.queue
@@ -130,13 +130,13 @@
       (funcall
        (funcall *psychiq-middleware-retry-jobs*
                 (lambda (job-info)
-                  (multiple-value-bind (job args)
+                  (multiple-value-bind (worker args)
                       (decode-job job-info)
-                    (apply #'perform-job processor queue job args))))
+                    (apply #'perform-job processor queue worker args))))
        (processor-connection processor) job-info queue))))
 
-(defgeneric perform-job (processor queue job &rest args)
-  (:method ((processor processor) queue job &rest args)
+(defgeneric perform-job (processor queue worker &rest args)
+  (:method ((processor processor) queue worker &rest args)
     (declare (ignore queue))
     (with-connection (processor-connection processor)
-      (apply #'perform job args))))
+      (apply #'perform worker args))))

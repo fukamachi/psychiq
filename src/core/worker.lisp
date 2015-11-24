@@ -1,5 +1,5 @@
 (in-package :cl-user)
-(defpackage psychiq.job
+(defpackage psychiq.worker
   (:use #:cl
         #:psychiq.specials)
   (:import-from #:psychiq.util
@@ -9,34 +9,30 @@
                 #:now)
   (:import-from #:alexandria
                 #:nconcf)
-  (:export #:job
-           #:job-id
+  (:export #:worker
            #:perform
            #:max-retries
            #:encode-job
            #:decode-job))
-(in-package :psychiq.job)
+(in-package :psychiq.worker)
 
 (defun generate-random-id (&optional (length 12))
   (format nil "~(~36,8,'0R~)" (random (expt 36 length))))
 
-(defclass job ()
-  ((id :initarg :id
-       :initform (generate-random-id)
-       :accessor job-id)))
+(defclass worker () ())
 
-(defgeneric perform (job &rest args)
-  (:method ((job job) &rest args)
+(defgeneric perform (worker &rest args)
+  (:method ((worker worker) &rest args)
     (declare (ignore args))
-    (error "PEFORM is not implemented for ~S" (class-name (class-of job)))))
+    (error "PEFORM is not implemented for ~S" (class-name (class-of worker)))))
 
-(defgeneric max-retries (job-class)
-  (:method ((job-class symbol))
-    (assert (subtypep job-class 'job))
+(defgeneric max-retries (worker-class)
+  (:method ((worker-class symbol))
+    (assert (subtypep worker-class 'worker))
     *default-max-retry-attempts*))
 
-(defun encode-job (job-class args)
-  `(("class" . ,(symbol-name-with-package job-class))
+(defun encode-job (worker-class args)
+  `(("class" . ,(symbol-name-with-package worker-class))
     ("args" . ,(mapcar (lambda (arg)
                          (prin1-to-string (marshal:marshal arg)))
                        args))
@@ -51,10 +47,9 @@
       (error "Invalid job: ~S" job-info))
     (let ((class (read-from-string (cdr class))))
       (check-type class symbol)
-      (let ((job (make-instance class
-                                :id (cdr jid))))
-        (check-type job job)
-        (values job
+      (let ((worker (make-instance class)))
+        (check-type worker worker)
+        (values worker
                 (mapcar (lambda (arg)
                           (marshal:unmarshal (read-from-string arg)))
                         (cdr args)))))))

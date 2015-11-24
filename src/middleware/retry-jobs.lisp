@@ -5,7 +5,7 @@
         #:psychiq.util)
   (:import-from #:psychiq.connection
                 #:with-connection)
-  (:import-from #:psychiq.job
+  (:import-from #:psychiq.worker
                 #:max-retries)
   (:import-from #:psychiq.coder
                 #:encode-object)
@@ -22,16 +22,16 @@
     (lambda (conn job-info queue)
       (handler-bind ((error
                        (lambda (e)
-                         (let ((job-class
+                         (let ((worker-class
                                   (ignore-errors
                                    (read-from-string (aget job-info "class")))))
-                           (when job-class
-                             (attempt-retry conn queue job-class job-info e))))))
+                           (when worker-class
+                             (attempt-retry conn queue worker-class job-info e))))))
         (funcall next job-info)))))
 
-(defun attempt-retry (conn queue job-class job-info e)
+(defun attempt-retry (conn queue worker-class job-info e)
   (let ((options '())
-        (max-retries (max-retries job-class)))
+        (max-retries (max-retries worker-class)))
     (setf max-retries
           (if (numberp max-retries)
               max-retries

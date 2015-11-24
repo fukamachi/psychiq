@@ -1,35 +1,35 @@
 (in-package :cl-user)
-(defpackage psychiq-test.job
+(defpackage psychiq-test.worker
   (:use #:cl
         #:prove
-        #:psychiq.job
+        #:psychiq.worker
         #:psychiq.util))
-(in-package :psychiq-test.job)
+(in-package :psychiq-test.worker)
 
 (plan 4)
 
-(defclass deferred-job (job) ())
+(defclass my-worker (worker) ())
 
-(when (find-method #'perform nil '(deferred-job) nil)
-  (remove-method #'perform (find-method #'perform nil '(deferred-job))))
+(when (find-method #'perform nil '(my-worker) nil)
+  (remove-method #'perform (find-method #'perform nil '(my-worker))))
 
-(is-error (perform (make-instance 'deferred-job))
+(is-error (perform (make-instance 'my-worker))
           'simple-error
           "PERFORM is not implemented")
 
-(defmethod perform ((job deferred-job) &rest args)
+(defmethod perform ((worker my-worker) &rest args)
   (declare (ignore args))
   (format t "~&Hi. I'm a deferred job.~%"))
 
-(is-print (perform (make-instance 'deferred-job))
+(is-print (perform (make-instance 'my-worker))
           "Hi. I'm a deferred job.
 "
           "Job's perform method")
 
 (subtest "No args job"
-  (let ((job-info (encode-job 'deferred-job ())))
+  (let ((job-info (encode-job 'my-worker ())))
     (is-type job-info 'list)
-    (is (aget job-info "class") "PSYCHIQ-TEST.JOB::DEFERRED-JOB"
+    (is (aget job-info "class") "PSYCHIQ-TEST.WORKER::MY-WORKER"
         "class")
     (is (aget job-info "args") nil
         "args")
@@ -37,9 +37,9 @@
     (ok (aget job-info "created_at") "created_at")))
 
 (subtest "Serializable args"
-  (let ((job-info (encode-job 'deferred-job (list 1 "2"))))
+  (let ((job-info (encode-job 'my-worker (list 1 "2"))))
     (is-type job-info 'list)
-    (is (aget job-info "class") "PSYCHIQ-TEST.JOB::DEFERRED-JOB"
+    (is (aget job-info "class") "PSYCHIQ-TEST.WORKER::MY-WORKER"
         "class")
     (is (aget job-info "args") '("(:PCODE 1 1)" "(:PCODE 1 (:SIMPLE-STRING 1 \"2\"))")
         "args")

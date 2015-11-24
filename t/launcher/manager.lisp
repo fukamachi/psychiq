@@ -5,8 +5,8 @@
         #:psychiq.launcher.manager)
   (:import-from #:psychiq.launcher.manager
                 #:manager-stopped-p)
-  (:import-from #:psychiq.job
-                #:job
+  (:import-from #:psychiq.worker
+                #:worker
                 #:perform)
   (:import-from #:psychiq.connection
                 #:with-connection
@@ -28,10 +28,10 @@
     (ok (manager-stopped-p manager))))
 
 (defparameter *perform-result* nil)
-(defclass deferred-job (job) ())
+(defclass my-worker (worker) ())
 
 (subtest "normal case"
-  (defmethod perform ((job deferred-job) &rest args)
+  (defmethod perform ((worker my-worker) &rest args)
     (declare (ignore args))
     (setf *perform-result* t)
     "OK")
@@ -41,7 +41,7 @@
          (with-connection conn
            (red:del (redis-key "queue" "manager-test-normal-case"))
            ;; Enqueue a job
-           (enqueue-to "manager-test-normal-case" 'deferred-job))
+           (enqueue-to "manager-test-normal-case" 'my-worker))
       (disconnect conn)))
   (setf *perform-result* nil)
   (let ((manager (make-manager :queues '("manager-test-normal-case") :timeout 1)))
@@ -51,7 +51,7 @@
     (kill manager)))
 
 (subtest "processor died"
-  (defmethod perform ((job deferred-job) &rest args)
+  (defmethod perform ((worker my-worker) &rest args)
     (declare (ignore args))
     (error "Failed"))
   (let ((conn (connect))
@@ -65,7 +65,7 @@
              (red:del (redis-key "retry"))
              ;; Enqueue a job
              (setf job-info
-                   (enqueue-to "manager-test-processor-died" 'deferred-job)))
+                   (enqueue-to "manager-test-processor-died" 'my-worker)))
 
            (start manager)
            (sleep 1.2)

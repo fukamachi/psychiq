@@ -11,8 +11,8 @@
                                       #:connect #:disconnect #:reconnect #:ensure-connected
                                       #:with-connection #:connectedp))
 
-(cl-reexport:reexport-from :psychiq.job
-                           :include '(#:job #:job-id #:perform #:max-retries))
+(cl-reexport:reexport-from :psychiq.worker
+                           :include '(#:worker #:perform #:max-retries))
 
 (cl-reexport:reexport-from :psychiq.client
                            :include '(#:enqueue #:enqueue-to #:dequeue

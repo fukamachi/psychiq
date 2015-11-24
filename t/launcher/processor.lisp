@@ -12,8 +12,8 @@
                 #:connect
                 #:disconnect
                 #:with-connection)
-  (:import-from #:psychiq.job
-                #:job
+  (:import-from #:psychiq.worker
+                #:worker
                 #:perform)
   (:import-from #:psychiq.client
                 #:enqueue-to)
@@ -35,8 +35,8 @@
 
 (defparameter *perform-result* nil)
 
-(defclass deferred-job (job) ())
-(defmethod perform ((job deferred-job) &rest args)
+(defclass my-worker (worker) ())
+(defmethod perform ((worker my-worker) &rest args)
   (declare (ignore args))
   (setf *perform-result* t))
 
@@ -48,14 +48,14 @@
            (with-connection conn
              (red:del (redis-key "queue" "test"))
              ;; Enqueue a job
-             (enqueue-to "test" 'deferred-job)))
+             (enqueue-to "test" 'my-worker)))
       (disconnect conn)))
   ;; Fetch a job
   (let* ((processor
            (make-processor :queues '("test")))
          (job-info (fetch-job processor)))
     (ok job-info "Can fetch-job")
-    (is-type (decode-job job-info) 'deferred-job
+    (is-type (decode-job job-info) 'my-worker
              "Can decode-job")))
 
 (subtest "start, stop & kill"
@@ -87,7 +87,7 @@
            (with-connection conn
              (red:del (redis-key "queue" "test"))
              ;; Enqueue a job
-             (enqueue-to "test" 'deferred-job)))
+             (enqueue-to "test" 'my-worker)))
       (disconnect conn)))
   (setf *perform-result* nil)
   (let ((processor

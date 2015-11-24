@@ -12,13 +12,13 @@ This software is still ALPHA quality. The APIs will be likely to change.
 
 ## Usage
 
-### Writing a job
+### Writing a worker
 
 ```common-lisp
 (psy:connect-toplevel :host "localhost" :port 6379)
 
-(defclass deferred-job (psy:job) ())
-(defmethod psy:perform ((job deferred-job) &rest args)
+(defclass my-worker (psy:worker) ())
+(defmethod psy:perform ((worker my-worker) &rest args)
   ;; blah blah blah
   )
 ```
@@ -27,10 +27,10 @@ This software is still ALPHA quality. The APIs will be likely to change.
 
 ```common-lisp
 ;; Enqueueing to "default" queue
-(psy:enqueue 'deferred-job '("arg1" "arg2"))
+(psy:enqueue 'my-worker '("arg1" "arg2"))
 
 ;; Enqueueing to the specific queue
-(psy:enqueue-to "myapp-job" 'deferred-job '("arg1" "arg2"))
+(psy:enqueue-to "myapp-job" 'my-worker '("arg1" "arg2"))
 ```
 
 ### Starting processing
@@ -38,7 +38,7 @@ This software is still ALPHA quality. The APIs will be likely to change.
 Psychiq provides a [Roswell](https://github.com/snmsts/roswell) script for starting processing:
 
 ```
-$ psychiq --host localhost --port 6379 --system myapp-jobs
+$ psychiq --host localhost --port 6379 --system myapp-workers
 ```
 
 ```
@@ -57,7 +57,7 @@ Options:
 ### Max retry attempts
 
 ```common-lisp
-(defmethod psy:max-retries ((job-class (eql 'deferred-job)))
+(defmethod psy:max-retries ((worker-class (eql 'my-worker)))
   1000)
 ```
 

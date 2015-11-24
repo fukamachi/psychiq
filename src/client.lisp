@@ -6,7 +6,7 @@
   (:import-from #:psychiq.connection
                 #:with-connection
                 #:*connection*)
-  (:import-from #:psychiq.job
+  (:import-from #:psychiq.worker
                 #:encode-job)
   (:import-from #:psychiq.coder
                 #:decode-object)
@@ -29,11 +29,11 @@
            #:all-dead-jobs))
 (in-package :psychiq.client)
 
-(defun enqueue (job-class &optional args)
-  (enqueue-to *default-queue-name* job-class args))
+(defun enqueue (worker-class &optional args)
+  (enqueue-to *default-queue-name* worker-class args))
 
-(defun enqueue-to (queue job-class &optional args)
-  (let ((job-info (encode-job job-class args)))
+(defun enqueue-to (queue worker-class &optional args)
+  (let ((job-info (encode-job worker-class args)))
     (with-connection *connection*
       (enqueue-to-queue queue job-info))))
 
