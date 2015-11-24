@@ -23,6 +23,7 @@
                :local-time
                :cl-reexport
                :bordeaux-threads
+               :dissect
                :marshal
                :vom
                :alexandria)

@@ -25,6 +25,21 @@
                          (attempt-retry conn queue worker job-info e))))
         (funcall next worker args)))))
 
+(defun backtrace (&optional (count-to-remove 0))
+  ;; Remove the first stack (this function) anyway.
+  (incf count-to-remove)
+  (with-output-to-string (*standard-output*)
+    (map nil
+         (lambda (stack)
+           (let ((*print-pretty* nil)
+                 (*print-readably* nil))
+             (format t "~&~D: ~:[~S ~S~;(~S~{ ~S~})~]~%"
+                     (- (dissect:pos stack) count-to-remove)
+                     (listp (dissect:args stack))
+                     (dissect:call stack)
+                     (dissect:args stack))))
+         (nthcdr count-to-remove (dissect:stack)))))
+
 (defun attempt-retry (conn queue worker job-info e)
   (let ((options '())
         (max-retries (max-retries worker)))
@@ -35,7 +50,8 @@
 
     (nconcf options
             `(("error_message" . ,(princ-to-string e))
-              ("error_class" . ,(symbol-name-with-package (class-name (class-of e))))))
+              ("error_class" . ,(symbol-name-with-package (class-name (class-of e))))
+              ("error_backtrace" . ,(backtrace 1))))
 
     (setf (aget options "queue") queue)
 
