@@ -1,41 +1,41 @@
 (in-package :cl-user)
-(defpackage psychiq-test.worker
+(defpackage psychiq-test.launcher
   (:use #:cl
         #:prove
-        #:psychiq.worker)
-  (:shadowing-import-from #:psychiq.worker
+        #:psychiq.launcher)
+  (:shadowing-import-from #:psychiq.launcher
                           #:run)
-  (:import-from #:psychiq.worker
-                #:make-worker
-                #:worker))
-(in-package :psychiq-test.worker)
+  (:import-from #:psychiq.launcher
+                #:make-launcher
+                #:launcher))
+(in-package :psychiq-test.launcher)
 
 (plan 5)
 
-(subtest "make-worker"
-  (let ((worker (make-worker)))
-    (is-type worker 'worker)
-    (is (princ-to-string worker)
-        "#<WORKER REDIS: localhost:6379 / CONCURRENCY: 25 / QUEUE: (default) / STATUS: STOPPED>")))
+(subtest "make-launcher"
+  (let ((launcher (make-launcher)))
+    (is-type launcher 'launcher)
+    (is (princ-to-string launcher)
+        "#<LAUNCHER REDIS: localhost:6379 / CONCURRENCY: 25 / QUEUE: (default) / STATUS: STOPPED>")))
 
 (subtest "start, stop & kill"
-  (let ((worker (make-worker :interval 1)))
+  (let ((launcher (make-launcher :interval 1)))
     (diag "start")
-    (is (worker-status worker) :stopped)
-    (is (start worker) worker)
-    (is (worker-status worker) :running)
+    (is (launcher-status launcher) :stopped)
+    (is (start launcher) launcher)
+    (is (launcher-status launcher) :running)
     (sleep 1)
 
     (diag "stop")
-    (ok (stop worker))
-    (is (worker-status worker) :stopping)
+    (ok (stop launcher))
+    (is (launcher-status launcher) :stopping)
     (sleep 1.2)
 
     (diag "kill")
-    (start worker)
-    (is (worker-status worker) :running)
-    (kill worker)
-    (ok (find (worker-status worker) '(:stopping :stopped)))))
+    (start launcher)
+    (is (launcher-status launcher) :running)
+    (kill launcher)
+    (ok (find (launcher-status launcher) '(:stopping :stopped)))))
 
 (sleep 3)
 (is (remove-if-not (lambda (thread)
@@ -45,12 +45,12 @@
     nil
     "All threads has been terminated")
 
-(subtest "can kill long interval worker"
-  (let ((worker (make-worker :interval 120))
+(subtest "can kill long interval launcher"
+  (let ((launcher (make-launcher :interval 120))
         (threads (bt:all-threads)))
-    (start worker)
+    (start launcher)
     (sleep 1)
-    (kill worker)
+    (kill launcher)
 
     (sleep 3)
 
@@ -60,7 +60,7 @@
                               (alexandria:starts-with-subseq "psychiq " (bt:thread-name thread))))
                        (bt:all-threads))
         nil
-        "All worker threads has been terminated")))
+        "All launcher threads has been terminated")))
 
 (is (remove-if-not (lambda (thread)
                      (and (bt:thread-alive-p thread)

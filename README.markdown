@@ -33,9 +33,9 @@ This software is still ALPHA quality. The APIs will be likely to change.
 (psy:enqueue-to "myapp-job" 'deferred-job '("arg1" "arg2"))
 ```
 
-### Starting a worker process
+### Starting processing
 
-Psychiq provides a [Roswell](https://github.com/snmsts/roswell) script for starting a worker process:
+Psychiq provides a [Roswell](https://github.com/snmsts/roswell) script for starting processing:
 
 ```
 $ psychiq --host localhost --port 6379 --system myapp-jobs

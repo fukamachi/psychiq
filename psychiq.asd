@@ -31,7 +31,7 @@
                 :components
                 ((:file "psychiq" :depends-on ("core" "client"))
                  (:file "client" :depends-on ("core"))
-                 (:file "worker" :depends-on ("core" "worker-core"))
+                 (:file "launcher" :depends-on ("core" "launcher-core"))
                  (:module "core"
                   :depends-on ("util")
                   :components
@@ -39,8 +39,8 @@
                    (:file "job")
                    (:file "queue" :depends-on ("coder"))
                    (:file "coder")))
-                 (:module "worker-core"
-                  :pathname "worker"
+                 (:module "launcher-core"
+                  :pathname "launcher"
                   :depends-on ("core" "middleware" "util")
                   :components
                   ((:file "processor")

@@ -1,9 +1,9 @@
 (in-package :cl-user)
-(defpackage psychiq-test.worker.manager
+(defpackage psychiq-test.launcher.manager
   (:use #:cl
         #:prove
-        #:psychiq.worker.manager)
-  (:import-from #:psychiq.worker.manager
+        #:psychiq.launcher.manager)
+  (:import-from #:psychiq.launcher.manager
                 #:manager-stopped-p)
   (:import-from #:psychiq.job
                 #:job
@@ -18,7 +18,7 @@
                 #:aget)
   (:import-from #:psychiq.util.redis
                 #:redis-key))
-(in-package :psychiq-test.worker.manager)
+(in-package :psychiq-test.launcher.manager)
 
 (plan 4)
 

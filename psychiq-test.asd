@@ -21,12 +21,12 @@
                    (:test-file "connection")
                    (:test-file "queue")
                    (:test-file "job")))
-                 (:module "worker"
+                 (:module "launcher"
                   :components
                   ((:test-file "processor")
                    (:test-file "manager")
                    (:test-file "scheduled")
-                   (:test-file "worker")))
+                   (:test-file "launcher")))
                  (:module "util"
                   :components
                   ((:test-file "util")

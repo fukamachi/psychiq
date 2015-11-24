@@ -1,5 +1,5 @@
 (in-package :cl-user)
-(defpackage psychiq.worker.processor
+(defpackage psychiq.launcher.processor
   (:use #:cl
         #:psychiq.util
         #:psychiq.specials)
@@ -31,7 +31,7 @@
            #:fetch-job
            #:process-job
            #:perform-job))
-(in-package :psychiq.worker.processor)
+(in-package :psychiq.launcher.processor)
 
 (defstruct (processor (:constructor %make-processor))
   (connection nil :type connection)

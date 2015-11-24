@@ -1,5 +1,5 @@
 (in-package :cl-user)
-(defpackage psychiq.worker.scheduled
+(defpackage psychiq.launcher.scheduled
   (:use #:cl
         #:psychiq.util
         #:psychiq.specials)
@@ -20,7 +20,7 @@
            #:stop
            #:kill
            #:make-scheduled))
-(in-package :psychiq.worker.scheduled)
+(in-package :psychiq.launcher.scheduled)
 
 (defstruct (scheduled (:constructor %make-scheduled))
   connection

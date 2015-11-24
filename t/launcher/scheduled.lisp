@@ -1,9 +1,9 @@
 (in-package :cl-user)
-(defpackage psychiq-test.worker.scheduled
+(defpackage psychiq-test.launcher.scheduled
   (:use #:cl
         #:prove
-        #:psychiq.worker.scheduled)
-  (:import-from #:psychiq.worker.scheduled
+        #:psychiq.launcher.scheduled)
+  (:import-from #:psychiq.launcher.scheduled
                 #:scheduled-thread
                 #:enqueue-jobs)
   (:import-from #:psychiq.connection
@@ -12,7 +12,7 @@
                 #:disconnect)
   (:import-from #:psychiq.util.redis
                 #:redis-key))
-(in-package :psychiq-test.worker.scheduled)
+(in-package :psychiq-test.launcher.scheduled)
 
 (defvar *threads* (bt:all-threads))
 
@@ -57,7 +57,7 @@
            (red:del (redis-key "queue" "test"))
            (red:zadd (redis-key "retry")
                      now
-                     "{\"class\":\"PSYCHIQ-TEST.WORKER.SCHEDULED::DEFERRED-JOB\",\"args\":[],\"jid\":\"b1ly5y10yia9\",\"enqueued_at\":1447827023,\"created_at\":1447827023,\"error_message\":\"Failed\",\"error_class\":\"COMMON-LISP::SIMPLE-ERROR\",\"failed_at\":1447827023,\"retry_count\":0,\"queue\":\"test\"}")
+                     "{\"class\":\"PSYCHIQ-TEST.LAUNCHER.SCHEDULED::DEFERRED-JOB\",\"args\":[],\"jid\":\"b1ly5y10yia9\",\"enqueued_at\":1447827023,\"created_at\":1447827023,\"error_message\":\"Failed\",\"error_class\":\"COMMON-LISP::SIMPLE-ERROR\",\"failed_at\":1447827023,\"retry_count\":0,\"queue\":\"test\"}")
            (enqueue-jobs (1+ now))
            (is (red:zrange (redis-key "retry") 0 1) nil)
            (let ((jobs (red:lrange (redis-key "queue" "test") 0 -1)))

@@ -1,9 +1,9 @@
 (in-package :cl-user)
-(defpackage psychiq-test.worker.processor
+(defpackage psychiq-test.launcher.processor
   (:use #:cl
         #:prove
-        #:psychiq.worker.processor)
-  (:shadowing-import-from #:psychiq.worker.processor
+        #:psychiq.launcher.processor)
+  (:shadowing-import-from #:psychiq.launcher.processor
                           #:run
                           #:finalize
                           #:decode-job
@@ -19,7 +19,7 @@
                 #:enqueue-to)
   (:import-from #:psychiq.util.redis
                 #:redis-key))
-(in-package :psychiq-test.worker.processor)
+(in-package :psychiq-test.launcher.processor)
 
 (plan 5)
 

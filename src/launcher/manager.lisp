@@ -1,7 +1,7 @@
 (in-package :cl-user)
-(defpackage psychiq.worker.manager
+(defpackage psychiq.launcher.manager
   (:use #:cl
-        #:psychiq.worker.processor
+        #:psychiq.launcher.processor
         #:psychiq.specials)
   (:import-from #:alexandria
                 #:when-let)
@@ -11,7 +11,7 @@
            #:start
            #:stop
            #:kill))
-(in-package :psychiq.worker.manager)
+(in-package :psychiq.launcher.manager)
 
 (defstruct (manager (:constructor %make-manager))
   host

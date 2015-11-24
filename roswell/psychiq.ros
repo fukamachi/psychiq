@@ -88,23 +88,23 @@ Options:
   (vom:config t :info)
   (let ((args (parse-args args)))
     (format *error-output*
-            "~&Starting a worker (concurrency=~A) with Redis (~A:~A)...~%"
+            "~&Starting processing (concurrency=~A) with Redis (~A:~A)...~%"
             (getf args :concurrency 25)
             (getf args :host *default-redis-host*)
             (getf args :port *default-redis-port*))
 
-    (let ((worker (apply #'psychiq.worker:run args)))
+    (let ((launcher (apply #'psychiq.launcher:run args)))
       (flet ((handle-sigint (signo)
                (format *error-output*
                        "~&~A~%"
                        (trivial-signal:signal-name signo))
-               (psychiq.worker:stop worker))
+               (psychiq.launcher:stop launcher))
              (handle-sigterm (signo)
                (format *error-output*
                        "~&~A~%"
                        (trivial-signal:signal-name signo))
-               (psychiq.worker:kill worker)))
+               (psychiq.launcher:kill launcher)))
         (setf (trivial-signal:signal-handler :term) #'handle-sigterm)
         (setf (trivial-signal:signal-handler :int)  #'handle-sigint)
         (with-handle-interrupt (lambda () (handle-sigint trivial-signal:+sigint+))
-          (psychiq.worker:wait-for-processors worker))))))
+          (psychiq.launcher:wait-for-processors launcher))))))

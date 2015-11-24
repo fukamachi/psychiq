@@ -1,34 +1,34 @@
 (in-package :cl-user)
-(defpackage psychiq.worker
+(defpackage psychiq.launcher
   (:use #:cl
         #:psychiq.specials)
-  (:import-from #:psychiq.worker.manager
+  (:import-from #:psychiq.launcher.manager
                 #:make-manager
                 #:manager-host
                 #:manager-port
                 #:manager-queues
                 #:manager-children
                 #:manager-count)
-  (:import-from #:psychiq.worker.processor
+  (:import-from #:psychiq.launcher.processor
                 #:processor-thread)
   (:import-from #:psychiq.connection
                 #:make-connection)
   (:import-from #:alexandria
                 #:ensure-list)
-  (:export #:worker
+  (:export #:launcher
            #:run
            #:start
            #:stop
            #:kill
-           #:worker-status
+           #:launcher-status
            #:wait-for-processors))
-(in-package :psychiq.worker)
+(in-package :psychiq.launcher)
 
-(defstruct (worker (:constructor %make-worker))
+(defstruct (launcher (:constructor %make-launcher))
   manager
   scheduled)
 
-(defun make-worker (&key (host *default-redis-host*) (port *default-redis-port*)
+(defun make-launcher (&key (host *default-redis-host*) (port *default-redis-port*)
                       (concurrency 25) (queue *default-queue-name*)
                       (interval 5))
   (let ((manager (make-manager :host host
@@ -37,47 +37,47 @@
                                :count concurrency
                                :timeout interval))
         (scheduled
-          (psychiq.worker.scheduled:make-scheduled :host host :port port)))
-    (%make-worker :manager manager :scheduled scheduled)))
+          (psychiq.launcher.scheduled:make-scheduled :host host :port port)))
+    (%make-launcher :manager manager :scheduled scheduled)))
 
-(defmethod print-object ((worker worker) stream)
-  (print-unreadable-object (worker stream :type worker)
-    (let ((manager (worker-manager worker)))
+(defmethod print-object ((launcher launcher) stream)
+  (print-unreadable-object (launcher stream :type launcher)
+    (let ((manager (launcher-manager launcher)))
       (format stream "REDIS: ~A:~A / CONCURRENCY: ~A / QUEUE: ~A / STATUS: ~A"
               (manager-host manager)
               (manager-port manager)
               (manager-count manager)
               (manager-queues manager)
-              (worker-status worker)))))
+              (launcher-status launcher)))))
 
 (defun run (&rest initargs
             &key host port (concurrency 25) queue)
   (declare (ignore host port concurrency queue))
-  (start (apply #'make-worker initargs)))
+  (start (apply #'make-launcher initargs)))
 
-(defun wait-for-processors (worker)
+(defun wait-for-processors (launcher)
   (map nil #'bt:join-thread
        (mapcar #'processor-thread
-               (manager-children (worker-manager worker)))))
+               (manager-children (launcher-manager launcher)))))
 
-(defun start (worker)
-  (psychiq.worker.manager:start (worker-manager worker))
-  (psychiq.worker.scheduled:start (worker-scheduled worker))
-  worker)
+(defun start (launcher)
+  (psychiq.launcher.manager:start (launcher-manager launcher))
+  (psychiq.launcher.scheduled:start (launcher-scheduled launcher))
+  launcher)
 
-(defun stop (worker)
-  (psychiq.worker.manager:stop (worker-manager worker))
-  (psychiq.worker.scheduled:stop (worker-scheduled worker)))
+(defun stop (launcher)
+  (psychiq.launcher.manager:stop (launcher-manager launcher))
+  (psychiq.launcher.scheduled:stop (launcher-scheduled launcher)))
 
-(defun kill (worker)
-  (psychiq.worker.manager:kill (worker-manager worker))
-  (psychiq.worker.scheduled:kill (worker-scheduled worker)))
+(defun kill (launcher)
+  (psychiq.launcher.manager:kill (launcher-manager launcher))
+  (psychiq.launcher.scheduled:kill (launcher-scheduled launcher)))
 
-(defun worker-status (worker)
+(defun launcher-status (launcher)
   (let ((manager-stopped-p
-          (psychiq.worker.manager:manager-stopped-p (worker-manager worker)))
+          (psychiq.launcher.manager:manager-stopped-p (launcher-manager launcher)))
         (scheduled-status
-          (psychiq.worker.scheduled:scheduled-status (worker-scheduled worker))))
+          (psychiq.launcher.scheduled:scheduled-status (launcher-scheduled launcher))))
     (cond
       ((and manager-stopped-p
             (eq scheduled-status :stopped))
