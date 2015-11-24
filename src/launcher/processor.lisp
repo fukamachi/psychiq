@@ -120,7 +120,9 @@
 
 (defgeneric process-job (processor queue job-info)
   (:method ((processor processor) queue job-info)
-    (vom:info "Got: ~S" job-info)
+    (vom:info "Got: ~S (ID: ~A)"
+              (aget job-info "class")
+              (aget job-info "jid"))
     (handler-bind ((error
                      (lambda (condition)
                        (vom:warn "Job ~A failed with ~S: ~A"
