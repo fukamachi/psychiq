@@ -1,9 +1,9 @@
 (in-package :cl-user)
-(defpackage redqing-test.coder
+(defpackage psychiq-test.coder
   (:use #:cl
         #:prove
-        #:redqing.coder))
-(in-package :redqing-test.coder)
+        #:psychiq.coder))
+(in-package :psychiq-test.coder)
 
 (plan 1)
 

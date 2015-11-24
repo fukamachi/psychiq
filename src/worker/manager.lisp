@@ -1,8 +1,8 @@
 (in-package :cl-user)
-(defpackage redqing.worker.manager
+(defpackage psychiq.worker.manager
   (:use #:cl
-        #:redqing.worker.processor
-        #:redqing.specials)
+        #:psychiq.worker.processor
+        #:psychiq.specials)
   (:import-from #:alexandria
                 #:when-let)
   (:export #:manager
@@ -11,7 +11,7 @@
            #:start
            #:stop
            #:kill))
-(in-package :redqing.worker.manager)
+(in-package :psychiq.worker.manager)
 
 (defstruct (manager (:constructor %make-manager))
   host

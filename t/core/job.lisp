@@ -1,10 +1,10 @@
 (in-package :cl-user)
-(defpackage redqing-test.job
+(defpackage psychiq-test.job
   (:use #:cl
         #:prove
-        #:redqing.job
-        #:redqing.util))
-(in-package :redqing-test.job)
+        #:psychiq.job
+        #:psychiq.util))
+(in-package :psychiq-test.job)
 
 (plan 4)
 
@@ -29,7 +29,7 @@
 (subtest "No args job"
   (let ((job-info (encode-job 'deferred-job ())))
     (is-type job-info 'list)
-    (is (aget job-info "class") "REDQING-TEST.JOB::DEFERRED-JOB"
+    (is (aget job-info "class") "PSYCHIQ-TEST.JOB::DEFERRED-JOB"
         "class")
     (is (aget job-info "args") nil
         "args")
@@ -39,7 +39,7 @@
 (subtest "Serializable args"
   (let ((job-info (encode-job 'deferred-job (list 1 "2"))))
     (is-type job-info 'list)
-    (is (aget job-info "class") "REDQING-TEST.JOB::DEFERRED-JOB"
+    (is (aget job-info "class") "PSYCHIQ-TEST.JOB::DEFERRED-JOB"
         "class")
     (is (aget job-info "args") '("(:PCODE 1 1)" "(:PCODE 1 (:SIMPLE-STRING 1 \"2\"))")
         "args")

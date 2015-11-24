@@ -1,10 +1,10 @@
-# Red Qing
+# Psychiq
 
-[![Build Status](https://travis-ci.org/fukamachi/redqing.svg?branch=master)](https://travis-ci.org/fukamachi/redqing)
-[![Coverage Status](https://coveralls.io/repos/fukamachi/redqing/badge.svg?branch=master)](https://coveralls.io/r/fukamachi/redqing)
-[![Quicklisp dist](http://quickdocs.org/badge/redqing.svg)](http://quickdocs.org/redqing/)
+[![Build Status](https://travis-ci.org/fukamachi/psychiq.svg?branch=master)](https://travis-ci.org/fukamachi/psychiq)
+[![Coverage Status](https://coveralls.io/repos/fukamachi/psychiq/badge.svg?branch=master)](https://coveralls.io/r/fukamachi/psychiq)
+[![Quicklisp dist](http://quickdocs.org/badge/psychiq.svg)](http://quickdocs.org/psychiq/)
 
-Red Qing is a Redis-backed job queueing system written in Common Lisp.
+Psychiq is a Redis-backed job queueing system written in Common Lisp.
 
 ## Warning
 
@@ -15,10 +15,10 @@ This software is still ALPHA quality. The APIs will be likely to change.
 ### Writing a job
 
 ```common-lisp
-(redq:connect-toplevel :host "localhost" :port 6379)
+(psy:connect-toplevel :host "localhost" :port 6379)
 
-(defclass deferred-job (redq:job) ())
-(defmethod redq:perform ((job deferred-job) &rest args)
+(defclass deferred-job (psy:job) ())
+(defmethod psy:perform ((job deferred-job) &rest args)
   ;; blah blah blah
   )
 ```
@@ -27,23 +27,23 @@ This software is still ALPHA quality. The APIs will be likely to change.
 
 ```common-lisp
 ;; Enqueueing to "default" queue
-(redq:enqueue 'deferred-job '("arg1" "arg2"))
+(psy:enqueue 'deferred-job '("arg1" "arg2"))
 
 ;; Enqueueing to the specific queue
-(redq:enqueue-to "myapp-job" 'deferred-job '("arg1" "arg2"))
+(psy:enqueue-to "myapp-job" 'deferred-job '("arg1" "arg2"))
 ```
 
 ### Starting a worker process
 
-Red Qing provides a [Roswell](https://github.com/snmsts/roswell) script for starting a worker process:
+Psychiq provides a [Roswell](https://github.com/snmsts/roswell) script for starting a worker process:
 
 ```
-$ redqing --host localhost --port 6379 --system myapp-jobs
+$ psychiq --host localhost --port 6379 --system myapp-jobs
 ```
 
 ```
-$ redqing -h
-Usage: redqing [option...]
+$ psychiq -h
+Usage: psychiq [option...]
 
 Options:
     -o, --host HOST           Redis server host
@@ -57,7 +57,7 @@ Options:
 ### Max retry attempts
 
 ```common-lisp
-(defmethod redq:max-retries ((job-class (eql 'deferred-job)))
+(defmethod psy:max-retries ((job-class (eql 'deferred-job)))
   1000)
 ```
 
@@ -65,11 +65,11 @@ Options:
 
 ```
 $ cd ~/common-lisp
-$ git clone https://github.com/fukamachi/redqing
+$ git clone https://github.com/fukamachi/psychiq
 ```
 
 ```
-$ ros install redqing
+$ ros install psychiq
 ```
 
 ## Author

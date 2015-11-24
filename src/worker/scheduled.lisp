@@ -1,15 +1,15 @@
 (in-package :cl-user)
-(defpackage redqing.worker.scheduled
+(defpackage psychiq.worker.scheduled
   (:use #:cl
-        #:redqing.util
-        #:redqing.specials)
-  (:import-from #:redqing.connection
+        #:psychiq.util
+        #:psychiq.specials)
+  (:import-from #:psychiq.connection
                 #:with-connection
                 #:make-connection
                 #:disconnect)
-  (:import-from #:redqing.queue
+  (:import-from #:psychiq.queue
                 #:enqueue-to-queue)
-  (:import-from #:redqing.coder
+  (:import-from #:psychiq.coder
                 #:decode-object)
   (:import-from #:local-time
                 #:timestamp-to-unix
@@ -20,7 +20,7 @@
            #:stop
            #:kill
            #:make-scheduled))
-(in-package :redqing.worker.scheduled)
+(in-package :psychiq.worker.scheduled)
 
 (defstruct (scheduled (:constructor %make-scheduled))
   connection
@@ -52,12 +52,12 @@
                 (setf (scheduled-status scheduled) :stopped)))
             :initial-bindings `((*standard-output* . ,*standard-output*)
                                 (*error-output* . ,*error-output*))
-            :name "redqing scheduled")))
+            :name "psychiq scheduled")))
     (setf (scheduled-thread scheduled) thread))
   scheduled)
 
 (defun scaled-poll-interval ()
-  (let* ( ;; Should be changed to the number of Red Qing processes
+  (let* ( ;; Should be changed to the number of Psychiq processes
          (process-count 1)
          (poll-interval-average (* process-count 2)))
     (+ (* poll-interval-average (random 1.0))

@@ -1,11 +1,11 @@
 (in-package :cl-user)
-(defpackage redqing.util
+(defpackage psychiq.util
   (:use #:cl)
   (:export #:symbol-name-with-package))
-(in-package :redqing.util)
+(in-package :psychiq.util)
 
-(cl-reexport:reexport-from :redqing.util.assoc)
-(cl-reexport:reexport-from :redqing.util.redis)
+(cl-reexport:reexport-from :psychiq.util.assoc)
+(cl-reexport:reexport-from :psychiq.util.redis)
 
 (defun symbol-name-with-package (symbol)
   (let ((package (symbol-package symbol)))

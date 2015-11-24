@@ -1,17 +1,17 @@
 (in-package :cl-user)
-(defpackage redqing.worker
+(defpackage psychiq.worker
   (:use #:cl
-        #:redqing.specials)
-  (:import-from #:redqing.worker.manager
+        #:psychiq.specials)
+  (:import-from #:psychiq.worker.manager
                 #:make-manager
                 #:manager-host
                 #:manager-port
                 #:manager-queues
                 #:manager-children
                 #:manager-count)
-  (:import-from #:redqing.worker.processor
+  (:import-from #:psychiq.worker.processor
                 #:processor-thread)
-  (:import-from #:redqing.connection
+  (:import-from #:psychiq.connection
                 #:make-connection)
   (:import-from #:alexandria
                 #:ensure-list)
@@ -22,7 +22,7 @@
            #:kill
            #:worker-status
            #:wait-for-processors))
-(in-package :redqing.worker)
+(in-package :psychiq.worker)
 
 (defstruct (worker (:constructor %make-worker))
   manager
@@ -37,7 +37,7 @@
                                :count concurrency
                                :timeout interval))
         (scheduled
-          (redqing.worker.scheduled:make-scheduled :host host :port port)))
+          (psychiq.worker.scheduled:make-scheduled :host host :port port)))
     (%make-worker :manager manager :scheduled scheduled)))
 
 (defmethod print-object ((worker worker) stream)
@@ -61,23 +61,23 @@
                (manager-children (worker-manager worker)))))
 
 (defun start (worker)
-  (redqing.worker.manager:start (worker-manager worker))
-  (redqing.worker.scheduled:start (worker-scheduled worker))
+  (psychiq.worker.manager:start (worker-manager worker))
+  (psychiq.worker.scheduled:start (worker-scheduled worker))
   worker)
 
 (defun stop (worker)
-  (redqing.worker.manager:stop (worker-manager worker))
-  (redqing.worker.scheduled:stop (worker-scheduled worker)))
+  (psychiq.worker.manager:stop (worker-manager worker))
+  (psychiq.worker.scheduled:stop (worker-scheduled worker)))
 
 (defun kill (worker)
-  (redqing.worker.manager:kill (worker-manager worker))
-  (redqing.worker.scheduled:kill (worker-scheduled worker)))
+  (psychiq.worker.manager:kill (worker-manager worker))
+  (psychiq.worker.scheduled:kill (worker-scheduled worker)))
 
 (defun worker-status (worker)
   (let ((manager-stopped-p
-          (redqing.worker.manager:manager-stopped-p (worker-manager worker)))
+          (psychiq.worker.manager:manager-stopped-p (worker-manager worker)))
         (scheduled-status
-          (redqing.worker.scheduled:scheduled-status (worker-scheduled worker))))
+          (psychiq.worker.scheduled:scheduled-status (worker-scheduled worker))))
     (cond
       ((and manager-stopped-p
             (eq scheduled-status :stopped))

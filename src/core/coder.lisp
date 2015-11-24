@@ -1,5 +1,5 @@
 (in-package :cl-user)
-(defpackage redqing.coder
+(defpackage psychiq.coder
   (:use #:cl)
   (:import-from #:jonathan
                 #:*false-value*
@@ -8,7 +8,7 @@
                 #:parse)
   (:export #:encode-object
            #:decode-object))
-(in-package :redqing.coder)
+(in-package :psychiq.coder)
 
 (defun encode-object (object)
   (jojo:to-json object :from :alist))

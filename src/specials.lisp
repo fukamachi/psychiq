@@ -1,14 +1,14 @@
 (in-package :cl-user)
-(defpackage redqing.specials
+(defpackage psychiq.specials
   (:use #:cl)
-  (:export #:*redqing-namespace*
+  (:export #:*psychiq-namespace*
            #:*default-redis-host*
            #:*default-redis-port*
            #:*default-queue-name*
            #:*default-max-retry-attempts*))
-(in-package :redqing.specials)
+(in-package :psychiq.specials)
 
-(defvar *redqing-namespace* "redqing")
+(defvar *psychiq-namespace* "psychiq")
 
 (defvar *default-redis-host* "localhost")
 (defvar *default-redis-port* 6379)

@@ -1,8 +1,8 @@
 (in-package :cl-user)
-(defpackage redqing.util.assoc
+(defpackage psychiq.util.assoc
   (:use #:cl)
   (:export #:aget))
-(in-package :redqing.util.assoc)
+(in-package :psychiq.util.assoc)
 
 (defun aget (alist key &key (test #'string=))
   (let ((record (assoc key alist :test test)))

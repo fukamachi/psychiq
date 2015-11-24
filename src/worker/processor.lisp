@@ -1,22 +1,22 @@
 (in-package :cl-user)
-(defpackage redqing.worker.processor
+(defpackage psychiq.worker.processor
   (:use #:cl
-        #:redqing.util
-        #:redqing.specials)
-  (:import-from #:redqing.connection
+        #:psychiq.util
+        #:psychiq.specials)
+  (:import-from #:psychiq.connection
                 #:*connection*
                 #:connection
                 #:make-connection
                 #:ensure-connected
                 #:disconnect
                 #:with-connection)
-  (:import-from #:redqing.job
+  (:import-from #:psychiq.job
                 #:perform
                 #:decode-job)
-  (:import-from #:redqing.queue
+  (:import-from #:psychiq.queue
                 #:dequeue-from-queue)
-  (:import-from #:redqing.middleware.retry-jobs
-                #:*redqing-middleware-retry-jobs*)
+  (:import-from #:psychiq.middleware.retry-jobs
+                #:*psychiq-middleware-retry-jobs*)
   (:export #:processor
            #:make-processor
            #:processor-status
@@ -31,7 +31,7 @@
            #:fetch-job
            #:process-job
            #:perform-job))
-(in-package :redqing.worker.processor)
+(in-package :psychiq.worker.processor)
 
 (defstruct (processor (:constructor %make-processor))
   (connection nil :type connection)
@@ -99,7 +99,7 @@
                (finalize processor)))
            :initial-bindings `((*standard-output* . ,*standard-output*)
                                (*error-output* . ,*error-output*))
-           :name "redqing processor"))
+           :name "psychiq processor"))
     processor))
 
 (defgeneric stop (processor)
@@ -128,7 +128,7 @@
                                  (class-name (class-of condition)) condition))))
       ;; Applying default middlewares
       (funcall
-       (funcall *redqing-middleware-retry-jobs*
+       (funcall *psychiq-middleware-retry-jobs*
                 (lambda (job-info)
                   (multiple-value-bind (job args)
                       (decode-job job-info)

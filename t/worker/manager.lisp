@@ -1,24 +1,24 @@
 (in-package :cl-user)
-(defpackage redqing-test.worker.manager
+(defpackage psychiq-test.worker.manager
   (:use #:cl
         #:prove
-        #:redqing.worker.manager)
-  (:import-from #:redqing.worker.manager
+        #:psychiq.worker.manager)
+  (:import-from #:psychiq.worker.manager
                 #:manager-stopped-p)
-  (:import-from #:redqing.job
+  (:import-from #:psychiq.job
                 #:job
                 #:perform)
-  (:import-from #:redqing.connection
+  (:import-from #:psychiq.connection
                 #:with-connection
                 #:connect
                 #:disconnect)
-  (:import-from #:redqing.client
+  (:import-from #:psychiq.client
                 #:enqueue-to)
-  (:import-from #:redqing.util.assoc
+  (:import-from #:psychiq.util.assoc
                 #:aget)
-  (:import-from #:redqing.util.redis
+  (:import-from #:psychiq.util.redis
                 #:redis-key))
-(in-package :redqing-test.worker.manager)
+(in-package :psychiq-test.worker.manager)
 
 (plan 4)
 
@@ -84,7 +84,7 @@
 
 (sleep 3)
 (is (remove-if-not (lambda (thread)
-                     (alexandria:starts-with-subseq "redqing " (bt:thread-name thread)))
+                     (alexandria:starts-with-subseq "psychiq " (bt:thread-name thread)))
                    (bt:all-threads))
     nil
     "All threads has been terminated")

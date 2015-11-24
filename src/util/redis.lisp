@@ -1,17 +1,17 @@
 (in-package :cl-user)
-(defpackage redqing.util.redis
+(defpackage psychiq.util.redis
   (:use #:cl)
-  (:import-from #:redqing.specials
-                #:*redqing-namespace*)
+  (:import-from #:psychiq.specials
+                #:*psychiq-namespace*)
   (:import-from #:alexandria
                 #:with-gensyms
                 #:starts-with-subseq)
   (:export #:with-redis-transaction
 
-           #:*redqing-namespace*
+           #:*psychiq-namespace*
            #:redis-key
            #:omit-redis-prefix))
-(in-package :redqing.util.redis)
+(in-package :psychiq.util.redis)
 
 (defmacro with-redis-transaction (&body body)
   (with-gensyms (ok)
@@ -26,7 +26,7 @@
 
 (defun redis-key (&rest keys)
   (format nil "~A:~{~A~^:~}"
-          *redqing-namespace*
+          *psychiq-namespace*
           keys))
 
 (defun omit-redis-prefix (key &rest prefixes)

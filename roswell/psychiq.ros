@@ -3,12 +3,12 @@
 exec ros -Q -- $0 "$@"
 |#
 
-(ql:quickload '(:redqing :trivial-signal :uiop) :silent t)
+(ql:quickload '(:psychiq :trivial-signal :uiop) :silent t)
 
-(use-package :redqing.specials)
+(use-package :psychiq.specials)
 
 (defun print-usage ()
-  (format *error-output* "~&Usage: redqing [option...]
+  (format *error-output* "~&Usage: psychiq [option...]
 
 Options:
     -o, --host HOST           Redis server host
@@ -93,18 +93,18 @@ Options:
             (getf args :host *default-redis-host*)
             (getf args :port *default-redis-port*))
 
-    (let ((worker (apply #'redqing.worker:run args)))
+    (let ((worker (apply #'psychiq.worker:run args)))
       (flet ((handle-sigint (signo)
                (format *error-output*
                        "~&~A~%"
                        (trivial-signal:signal-name signo))
-               (redqing.worker:stop worker))
+               (psychiq.worker:stop worker))
              (handle-sigterm (signo)
                (format *error-output*
                        "~&~A~%"
                        (trivial-signal:signal-name signo))
-               (redqing.worker:kill worker)))
+               (psychiq.worker:kill worker)))
         (setf (trivial-signal:signal-handler :term) #'handle-sigterm)
         (setf (trivial-signal:signal-handler :int)  #'handle-sigint)
         (with-handle-interrupt (lambda () (handle-sigint trivial-signal:+sigint+))
-          (redqing.worker:wait-for-processors worker))))))
+          (psychiq.worker:wait-for-processors worker))))))

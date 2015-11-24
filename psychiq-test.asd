@@ -1,17 +1,17 @@
 #|
-  This file is a part of redqing project.
+  This file is a part of psychiq project.
   Copyright (c) 2015 Eitaro Fukamachi (e.arrows@gmail.com)
 |#
 
 (in-package :cl-user)
-(defpackage redqing-test-asd
+(defpackage psychiq-test-asd
   (:use :cl :asdf))
-(in-package :redqing-test-asd)
+(in-package :psychiq-test-asd)
 
-(defsystem redqing-test
+(defsystem psychiq-test
   :author "Eitaro Fukamachi"
   :license "LLGPL"
-  :depends-on (:redqing
+  :depends-on (:psychiq
                :prove)
   :components ((:module "t"
                 :components
@@ -31,7 +31,7 @@
                   :components
                   ((:test-file "util")
                    (:test-file "assoc"))))))
-  :description "Test system for redqing"
+  :description "Test system for psychiq"
 
   :defsystem-depends-on (:prove-asdf)
   :perform (test-op :after (op c)

@@ -1,9 +1,9 @@
 (in-package :cl-user)
-(defpackage redqing-test.connection
+(defpackage psychiq-test.connection
   (:use #:cl
         #:prove
-        #:redqing.connection))
-(in-package :redqing-test.connection)
+        #:psychiq.connection))
+(in-package :psychiq-test.connection)
 
 (plan 2)
 

@@ -1,23 +1,23 @@
 (in-package :cl-user)
-(defpackage redqing.middleware.retry-jobs
+(defpackage psychiq.middleware.retry-jobs
   (:use #:cl
-        #:redqing.specials
-        #:redqing.util)
-  (:import-from #:redqing.connection
+        #:psychiq.specials
+        #:psychiq.util)
+  (:import-from #:psychiq.connection
                 #:with-connection)
-  (:import-from #:redqing.job
+  (:import-from #:psychiq.job
                 #:max-retries)
-  (:import-from #:redqing.coder
+  (:import-from #:psychiq.coder
                 #:encode-object)
   (:import-from #:local-time
                 #:timestamp-to-unix
                 #:now)
   (:import-from #:alexandria
                 #:nconcf)
-  (:export #:*redqing-middleware-retry-jobs*))
-(in-package :redqing.middleware.retry-jobs)
+  (:export #:*psychiq-middleware-retry-jobs*))
+(in-package :psychiq.middleware.retry-jobs)
 
-(defparameter *redqing-middleware-retry-jobs*
+(defparameter *psychiq-middleware-retry-jobs*
   (lambda (next)
     (lambda (conn job-info queue)
       (handler-bind ((error

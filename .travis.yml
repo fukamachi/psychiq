@@ -32,4 +32,4 @@ before_script:
   - ros config
 
 script:
-  - run-prove redqing-test.asd
+  - run-prove psychiq-test.asd

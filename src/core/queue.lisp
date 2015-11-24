@@ -1,8 +1,8 @@
 (in-package :cl-user)
-(defpackage redqing.queue
+(defpackage psychiq.queue
   (:use #:cl
-        #:redqing.util)
-  (:import-from #:redqing.coder
+        #:psychiq.util)
+  (:import-from #:psychiq.coder
                 #:encode-object
                 #:decode-object)
   (:import-from #:local-time
@@ -12,7 +12,7 @@
                 #:ensure-list)
   (:export #:enqueue-to-queue
            #:dequeue-from-queue))
-(in-package :redqing.queue)
+(in-package :psychiq.queue)
 
 (defun enqueue-to-queue (queue job-info)
   (with-redis-transaction

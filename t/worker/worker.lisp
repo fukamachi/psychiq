@@ -1,14 +1,14 @@
 (in-package :cl-user)
-(defpackage redqing-test.worker
+(defpackage psychiq-test.worker
   (:use #:cl
         #:prove
-        #:redqing.worker)
-  (:shadowing-import-from #:redqing.worker
+        #:psychiq.worker)
+  (:shadowing-import-from #:psychiq.worker
                           #:run)
-  (:import-from #:redqing.worker
+  (:import-from #:psychiq.worker
                 #:make-worker
                 #:worker))
-(in-package :redqing-test.worker)
+(in-package :psychiq-test.worker)
 
 (plan 5)
 
@@ -40,7 +40,7 @@
 (sleep 3)
 (is (remove-if-not (lambda (thread)
                      (and (bt:thread-alive-p thread)
-                          (alexandria:starts-with-subseq "redqing " (bt:thread-name thread))))
+                          (alexandria:starts-with-subseq "psychiq " (bt:thread-name thread))))
                    (bt:all-threads))
     nil
     "All threads has been terminated")
@@ -57,14 +57,14 @@
     (is (remove-if-not (lambda (thread)
                          (and (bt:thread-alive-p thread)
                               (not (find thread threads :test #'eq))
-                              (alexandria:starts-with-subseq "redqing " (bt:thread-name thread))))
+                              (alexandria:starts-with-subseq "psychiq " (bt:thread-name thread))))
                        (bt:all-threads))
         nil
         "All worker threads has been terminated")))
 
 (is (remove-if-not (lambda (thread)
                      (and (bt:thread-alive-p thread)
-                          (alexandria:starts-with-subseq "redqing " (bt:thread-name thread))))
+                          (alexandria:starts-with-subseq "psychiq " (bt:thread-name thread))))
                    (bt:all-threads))
     nil
     "All threads has been terminated")

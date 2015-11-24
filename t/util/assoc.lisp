@@ -1,9 +1,9 @@
 (in-package :cl-user)
-(defpackage redqing-test.util.assoc
+(defpackage psychiq-test.util.assoc
   (:use #:cl
         #:prove
-        #:redqing.util.assoc))
-(in-package :redqing-test.util.assoc)
+        #:psychiq.util.assoc))
+(in-package :psychiq-test.util.assoc)
 
 (plan 1)
 

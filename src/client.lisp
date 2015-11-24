@@ -1,16 +1,16 @@
 (in-package :cl-user)
-(defpackage redqing.client
+(defpackage psychiq.client
   (:use #:cl
-        #:redqing.util
-        #:redqing.specials)
-  (:import-from #:redqing.connection
+        #:psychiq.util
+        #:psychiq.specials)
+  (:import-from #:psychiq.connection
                 #:with-connection
                 #:*connection*)
-  (:import-from #:redqing.job
+  (:import-from #:psychiq.job
                 #:encode-job)
-  (:import-from #:redqing.coder
+  (:import-from #:psychiq.coder
                 #:decode-object)
-  (:import-from #:redqing.queue
+  (:import-from #:psychiq.queue
                 #:enqueue-to-queue
                 #:dequeue-from-queue)
   (:import-from #:alexandria
@@ -27,7 +27,7 @@
            #:all-retries
            #:retry-length
            #:all-dead-jobs))
-(in-package :redqing.client)
+(in-package :psychiq.client)
 
 (defun enqueue (job-class &optional args)
   (enqueue-to *default-queue-name* job-class args))

@@ -1,8 +1,8 @@
 (in-package :cl-user)
-(defpackage redqing.job
+(defpackage psychiq.job
   (:use #:cl
-        #:redqing.specials)
-  (:import-from #:redqing.util
+        #:psychiq.specials)
+  (:import-from #:psychiq.util
                 #:symbol-name-with-package)
   (:import-from #:local-time
                 #:timestamp-to-unix
@@ -15,7 +15,7 @@
            #:max-retries
            #:encode-job
            #:decode-job))
-(in-package :redqing.job)
+(in-package :psychiq.job)
 
 (defun generate-random-id (&optional (length 12))
   (format nil "~(~36,8,'0R~)" (random (expt 36 length))))

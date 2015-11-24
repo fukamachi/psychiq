@@ -1,5 +1,5 @@
 #|
-  This file is a part of redqing project.
+  This file is a part of psychiq project.
   Copyright (c) 2015 Eitaro Fukamachi (e.arrows@gmail.com)
 |#
 
@@ -10,11 +10,11 @@
 |#
 
 (in-package :cl-user)
-(defpackage redqing-asd
+(defpackage psychiq-asd
   (:use :cl :asdf))
-(in-package :redqing-asd)
+(in-package :psychiq-asd)
 
-(defsystem redqing
+(defsystem psychiq
   :version "0.1"
   :author "Eitaro Fukamachi"
   :license "LLGPL"
@@ -29,7 +29,7 @@
   :components ((:module "src"
                 :depends-on ("src/specials")
                 :components
-                ((:file "redqing" :depends-on ("core" "client"))
+                ((:file "psychiq" :depends-on ("core" "client"))
                  (:file "client" :depends-on ("core"))
                  (:file "worker" :depends-on ("core" "worker-core"))
                  (:module "core"
@@ -69,4 +69,4 @@
                                :fill-pointer t)))
           (setf (fill-pointer seq) (read-sequence seq stream))
           seq)))
-  :in-order-to ((test-op (test-op redqing-test))))
+  :in-order-to ((test-op (test-op psychiq-test))))

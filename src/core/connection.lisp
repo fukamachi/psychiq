@@ -1,7 +1,7 @@
 (in-package :cl-user)
-(defpackage redqing.connection
+(defpackage psychiq.connection
   (:use #:cl
-        #:redqing.specials)
+        #:psychiq.specials)
   (:import-from #:alexandria
                 #:when-let
                 #:once-only)
@@ -20,7 +20,7 @@
            #:open-connection
            #:close-connection
            #:connectedp))
-(in-package :redqing.connection)
+(in-package :psychiq.connection)
 
 (defvar *connection*)
 
