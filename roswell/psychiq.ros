@@ -20,9 +20,11 @@ Options:
 ")
   (uiop:quit -1))
 
-(defmacro case-option (keyform &body cases)
-  (let ((g-keyform (gensym "KEYFORM")))
-    `(let ((,g-keyform ,keyform))
+(defmacro case* ((keyform &key (test #'equal)) &body cases)
+  (let ((g-keyform (gensym "KEYFORM"))
+        (g-test (gensym "TEST")))
+    `(let ((,g-keyform ,keyform)
+           (,g-test ,test))
        (cond
          ,@(loop for (case . body) in cases
                  if (eq case 'otherwise)
@@ -31,7 +33,7 @@ Options:
                    collect `((find ,g-keyform ',(if (listp case)
                                                     case
                                                     (list case))
-                                   :test #'equal)
+                                   :test ,g-test)
                              ,@body))))))
 
 (defun parse-args (args)
@@ -42,7 +44,7 @@ Options:
             with systems = '()
             for option = (pop args)
             while option
-            do (case-option option
+            do (case* (option)
                  (("-o" "--host")
                   (add-option :host (pop args)))
                  (("-p" "--port")
