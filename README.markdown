@@ -30,7 +30,10 @@ This software is still ALPHA quality. The APIs will be likely to change.
 (psy:enqueue 'my-worker '("arg1" "arg2"))
 
 ;; Enqueueing to the specific queue
-(psy:enqueue-to "myapp-job" 'my-worker '("arg1" "arg2"))
+(defmethod psy:queue-name ((worker my-worker))
+  "myapp-job")
+
+(psy:enqueue 'my-worker '("arg1" "arg2"))
 ```
 
 The arguments must be simple JSON datatypes which can be serialized with Jonathan.

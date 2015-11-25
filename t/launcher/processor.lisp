@@ -14,9 +14,10 @@
                 #:with-connection)
   (:import-from #:psychiq.worker
                 #:worker
-                #:perform)
+                #:perform
+                #:queue-name)
   (:import-from #:psychiq.client
-                #:enqueue-to)
+                #:enqueue)
   (:import-from #:psychiq.util.redis
                 #:redis-key))
 (in-package :psychiq-test.launcher.processor)
@@ -39,6 +40,8 @@
 (defmethod perform ((worker my-worker) &rest args)
   (declare (ignore args))
   (setf *perform-result* t))
+(defmethod queue-name ((worker my-worker))
+  "test")
 
 (subtest "fetch-job & decode-job"
   (let ((conn (connect)))
@@ -48,7 +51,7 @@
            (with-connection conn
              (red:del (redis-key "queue" "test"))
              ;; Enqueue a job
-             (enqueue-to "test" 'my-worker)))
+             (enqueue 'my-worker)))
       (disconnect conn)))
   ;; Fetch a job
   (let* ((processor
@@ -87,7 +90,7 @@
            (with-connection conn
              (red:del (redis-key "queue" "test"))
              ;; Enqueue a job
-             (enqueue-to "test" 'my-worker)))
+             (enqueue 'my-worker)))
       (disconnect conn)))
   (setf *perform-result* nil)
   (let ((processor

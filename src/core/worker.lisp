@@ -11,6 +11,7 @@
                 #:nconcf)
   (:export #:worker
            #:perform
+           #:queue-name
            #:max-retries
            #:encode-job
            #:decode-job))
@@ -25,6 +26,10 @@
   (:method ((worker worker) &rest args)
     (declare (ignore args))
     (error "PEFORM is not implemented for ~S" (class-name (class-of worker)))))
+
+(defgeneric queue-name (worker)
+  (:method ((worker worker))
+    *default-queue-name*))
 
 (defgeneric max-retries (worker)
   (:method ((worker worker))

@@ -7,6 +7,7 @@
                 #:with-connection
                 #:*connection*)
   (:import-from #:psychiq.worker
+                #:queue-name
                 #:encode-job)
   (:import-from #:psychiq.coder
                 #:decode-object)
@@ -16,7 +17,6 @@
   (:import-from #:alexandria
                 #:ensure-list)
   (:export #:enqueue
-           #:enqueue-to
            #:dequeue
            #:all-queues
            #:queue-length
@@ -30,10 +30,9 @@
 (in-package :psychiq.client)
 
 (defun enqueue (worker-class &optional args)
-  (enqueue-to *default-queue-name* worker-class args))
-
-(defun enqueue-to (queue worker-class &optional args)
-  (let ((job-info (encode-job worker-class args)))
+  (let ((job-info (encode-job worker-class args))
+        (queue (queue-name
+                (allocate-instance (find-class worker-class)))))
     (with-connection *connection*
       (enqueue-to-queue queue job-info))))
 
