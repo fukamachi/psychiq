@@ -40,22 +40,33 @@
     "OK")
   (defmethod queue-name ((worker my-worker))
     "manager-test-normal-case")
-  (let ((conn (connect)))
+  (let ((conn (connect))
+        stats)
     (unwind-protect
-         ;; Clear
-         (with-connection conn
-           (red:del (redis-key "queue" "manager-test-normal-case"))
-           ;; Enqueue a job
-           (enqueue 'my-worker))
-      (disconnect conn)))
-  (setf *perform-result* nil)
-  (let ((manager (make-manager :queues '("manager-test-normal-case") :timeout 1)))
-    (start manager)
-    (sleep 1.2)
-    (is *perform-result* t)
-    (is (get-value (manager-stat-processed manager)) 1)
-    (is (get-value (manager-stat-failed manager)) 0)
-    (kill manager)))
+         (progn
+           ;; Clear
+           (with-connection conn
+             (red:del (redis-key "queue" "manager-test-normal-case"))
+             (setf stats (psy:stats))
+             ;; Enqueue a job
+             (enqueue 'my-worker))
+
+           (setf *perform-result* nil)
+           (let ((manager (make-manager :queues '("manager-test-normal-case") :timeout 1)))
+             (start manager)
+             (sleep 1.2)
+             (is *perform-result* t)
+             (with-connection conn
+               (is (- (+ (getf (psy:stats) :processed)
+                          (get-value (manager-stat-processed manager)))
+                       (getf stats :processed))
+                   1)
+               (is (- (+ (getf (psy:stats) :failed)
+                          (get-value (manager-stat-failed manager)))
+                       (getf stats :failed))
+                   0))
+             (kill manager)))
+      (disconnect conn))))
 
 (subtest "processor died"
   (defmethod perform ((worker my-worker) &rest args)
@@ -65,13 +76,15 @@
     "manager-test-processor-died")
   (let ((conn (connect))
         (manager (make-manager :queues '("manager-test-processor-died") :timeout 1))
-        job-info)
+        job-info
+        stats)
     (unwind-protect
          (progn
            ;; Clear
            (with-connection conn
              (red:del (redis-key "queue" "manager-test-processor-died"))
              (red:del (redis-key "retry"))
+             (setf stats (psy:stats))
              ;; Enqueue a job
              (setf job-info
                    (enqueue 'my-worker)))
@@ -92,8 +105,15 @@
                  (ok (aget failed-info "error_backtrace"))
                  (is (aget failed-info "retry_count") 0))))
 
-           (is (get-value (manager-stat-processed manager)) 1)
-           (is (get-value (manager-stat-failed manager)) 1)
+           (with-connection conn
+             (is (- (+ (getf (psy:stats) :processed)
+                        (get-value (manager-stat-processed manager)))
+                     (getf stats :processed))
+                 1)
+             (is (- (+ (getf (psy:stats) :failed)
+                        (get-value (manager-stat-failed manager)))
+                     (getf stats :failed))
+                 1))
            (stop manager)
            (sleep 1))
       (disconnect conn)
