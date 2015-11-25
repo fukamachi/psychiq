@@ -10,6 +10,7 @@
                 #:queue-name
                 #:encode-job)
   (:import-from #:psychiq.coder
+                #:encode-object
                 #:decode-object)
   (:import-from #:psychiq.queue
                 #:enqueue-to-queue
@@ -22,6 +23,7 @@
   (:import-from #:alexandria
                 #:ensure-list)
   (:export #:enqueue
+           #:enqueue-bulk
            #:enqueue-in-sec
            #:dequeue
            #:all-queues
@@ -42,6 +44,22 @@
                 (allocate-instance (find-class worker-class)))))
     (with-connection *connection*
       (enqueue-to-queue queue job-info))))
+
+(defun enqueue-bulk (worker-class job-args &rest more-job-args)
+  (let ((queue (queue-name
+                (allocate-instance (find-class worker-class))))
+        (now (timestamp-to-unix (now)))
+        (jobs '()))
+    (with-connection *connection*
+      (with-redis-transaction
+        (dolist (args (cons job-args more-job-args))
+          (let ((job-info (encode-job worker-class args)))
+            (setf (aget job-info "enqueued_at") now)
+            (red:rpush (redis-key "queue" queue)
+                       (encode-object job-info))
+            (push job-info jobs)))
+        (red:sadd (redis-key "queues") queue)))
+    (nreverse jobs)))
 
 (defun enqueue-in-sec (interval worker-class &optional args)
   (check-type interval fixnum)
