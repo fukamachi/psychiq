@@ -53,6 +53,7 @@ Options:
     -q, --queue QUEUE[,WEIGHT]      Queues to process with optional weights (several -q's allowed)
     -c, --concurrency INT           Processor threads to use (default: 25)
     -s, --system SYSTEM             ASDF system to load before starting (several -s's allowed)
+    -n, --namespace NAMESPACE       Redis namespace (default: \"psychiq\")
     -h, --help                      Show help
 ```
 

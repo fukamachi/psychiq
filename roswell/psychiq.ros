@@ -3,7 +3,7 @@
 exec ros -Q -- $0 "$@"
 |#
 
-(ql:quickload '(:psychiq :trivial-signal :uiop) :silent t)
+(ql:quickload '(:psychiq :trivial-signal :alexandria :uiop) :silent t)
 
 (use-package :psychiq.specials)
 
@@ -16,6 +16,7 @@ Options:
     -q, --queue QUEUE[,WEIGHT]      Queues to process with optional weights (several -q's allowed)
     -c, --concurrency INT           Processor threads to use (default: 25)
     -s, --system SYSTEM             ASDF system to load before starting (several -s's allowed)
+    -n, --namespace NAMESPACE       Redis namespace (default: \"psychiq\")
     -h, --help                      Show help
 ")
   (uiop:quit -1))
@@ -72,6 +73,8 @@ Options:
                         (push queue queues)))))
                  (("-s" "--system")
                   (push (pop args) systems))
+                 (("-n" "--namespace")
+                  (add-option :namespace (pop args)))
                  (("-h" "--help")
                   (print-usage))
                  (otherwise
@@ -111,6 +114,11 @@ Options:
             (getf args :concurrency 25)
             (getf args :host *default-redis-host*)
             (getf args :port *default-redis-port*))
+
+    (let ((namespace (getf args :namespace)))
+      (when namespace
+        (setf args (alexandria:delete-from-plist args :namespace))
+        (setf *psychiq-namespace* namespace)))
 
     (let ((launcher (apply #'psychiq.launcher:run args)))
       (flet ((handle-sigint (signo)
