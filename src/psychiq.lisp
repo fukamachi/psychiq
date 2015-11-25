@@ -18,6 +18,7 @@
                            :include '(#:enqueue #:enqueue-in-sec #:dequeue
                                       #:all-queues #:queue-length #:queue-empty-p #:delete-queue #:slice-queue #:peek-queue
                                       #:all-retries #:retry-length
-                                      #:all-dead-jobs))
+                                      #:all-dead-jobs
+                                      #:stats))
 
 (cl-reexport:reexport-from :psychiq.specials)

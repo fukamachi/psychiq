@@ -32,7 +32,8 @@
            #:peek-queue
            #:all-retries
            #:retry-length
-           #:all-dead-jobs))
+           #:all-dead-jobs
+           #:stats))
 (in-package :psychiq.client)
 
 (defun enqueue (worker-class &optional args)
@@ -103,3 +104,34 @@
   (decode-objects
    (with-connection *connection*
      (red:zrange (redis-key "dead") 0 -1))))
+
+(defun stats ()
+  (with-connection *connection*
+    (destructuring-bind (processed failed
+                         schedule retry dead
+                         default-queue-last-job
+                         queues)
+        (redis:with-pipelining
+          (red:get (redis-key "stat" "processed"))
+          (red:get (redis-key "stat" "failed"))
+          (red:zcard (redis-key "schedule"))
+          (red:zcard (redis-key "retry"))
+          (red:zcard (redis-key "dead"))
+          (red:lrange (redis-key "queue" "default") -1 -1)
+          (red:smembers (redis-key "queues")))
+      `(:processed ,(parse-integer processed)
+        :failed    ,(parse-integer failed)
+        :scheduled ,schedule
+        :retry ,retry
+        :dead ,dead
+        :default-queue-latency ,(if default-queue-last-job
+                                    (- (timestamp-to-unix (now))
+                                        (aget (decode-object
+                                               (first default-queue-last-job))
+                                              "enqueued_at"))
+                                    0)
+        :enqueued ,(reduce (lambda (count queue)
+                             (+ count
+                                 (red:llen (redis-key "queue" queue))))
+                           queues
+                           :initial-value 0)))))
