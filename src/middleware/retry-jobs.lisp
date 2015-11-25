@@ -19,11 +19,15 @@
 
 (defparameter *psychiq-middleware-retry-jobs*
   (lambda (next)
-    (lambda (conn worker args job-info queue)
+    (lambda (conn job-info queue)
       (handler-bind ((error
                        (lambda (e)
-                         (attempt-retry conn queue worker job-info e))))
-        (funcall next worker args)))))
+                         (let ((worker-class
+                                 (ignore-errors
+                                  (read-from-string (aget job-info "class")))))
+                           (when worker-class
+                             (attempt-retry conn queue worker-class job-info e))))))
+        (funcall next job-info)))))
 
 (defun backtrace (&optional (count-to-remove 0))
   ;; Remove the first stack (this function) anyway.
@@ -40,9 +44,10 @@
                      (dissect:args stack))))
          (nthcdr count-to-remove (dissect:stack)))))
 
-(defun attempt-retry (conn queue worker job-info e)
+(defun attempt-retry (conn queue worker-class job-info e)
   (let ((options '())
-        (max-retries (max-retries worker)))
+        (max-retries
+          (max-retries (allocate-instance (find-class worker-class)))))
     (setf max-retries
           (if (numberp max-retries)
               max-retries
