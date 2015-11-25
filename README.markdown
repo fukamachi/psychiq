@@ -48,12 +48,12 @@ $ psychiq -h
 Usage: psychiq [option...]
 
 Options:
-    -o, --host HOST           Redis server host
-    -p, --port PORT           Redis server port
-    -q, --queue QUEUE         Queues to process (several -q's allowed)
-    -c, --concurrency INT     Processor threads to use (default: 25)
-    -s, --system SYSTEM       ASDF system to load before starting (several -s's allowed)
-    -h, --help                Show help
+    -o, --host HOST                 Redis server host
+    -p, --port PORT                 Redis server port
+    -q, --queue QUEUE[,WEIGHT]      Queues to process with optional weights (several -q's allowed)
+    -c, --concurrency INT           Processor threads to use (default: 25)
+    -s, --system SYSTEM             ASDF system to load before starting (several -s's allowed)
+    -h, --help                      Show help
 ```
 
 ### Max retry attempts
