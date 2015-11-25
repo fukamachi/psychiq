@@ -1,7 +1,9 @@
 (in-package :cl-user)
-(defpackage psychiq.util
-  (:use #:cl)
-  (:export #:symbol-name-with-package))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (handler-bind (#+sbcl (warning #'muffle-warning))
+    (defpackage psychiq.util
+      (:use #:cl)
+      (:export #:symbol-name-with-package))))
 (in-package :psychiq.util)
 
 (cl-reexport:reexport-from :psychiq.util.assoc)
