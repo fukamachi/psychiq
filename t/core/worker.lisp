@@ -41,7 +41,7 @@
     (is-type job-info 'list)
     (is (aget job-info "class") "PSYCHIQ-TEST.WORKER::MY-WORKER"
         "class")
-    (is (aget job-info "args") '("(:PCODE 1 1)" "(:PCODE 1 (:SIMPLE-STRING 1 \"2\"))")
+    (is (aget job-info "args") '(1 "2")
         "args")
     (ok (aget job-info "jid") "jid")
     (ok (aget job-info "created_at") "created_at")))

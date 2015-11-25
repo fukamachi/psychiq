@@ -24,7 +24,6 @@
                :cl-reexport
                :bordeaux-threads
                :dissect
-               :marshal
                :vom
                :alexandria)
   :components ((:module "src"

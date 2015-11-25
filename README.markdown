@@ -33,6 +33,8 @@ This software is still ALPHA quality. The APIs will be likely to change.
 (psy:enqueue-to "myapp-job" 'my-worker '("arg1" "arg2"))
 ```
 
+The arguments must be simple JSON datatypes which can be serialized with Jonathan.
+
 ### Starting processing
 
 Psychiq provides a [Roswell](https://github.com/snmsts/roswell) script for starting processing:

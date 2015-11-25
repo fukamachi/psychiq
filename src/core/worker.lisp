@@ -32,9 +32,7 @@
 
 (defun encode-job (worker-class args)
   `(("class" . ,(symbol-name-with-package worker-class))
-    ("args" . ,(mapcar (lambda (arg)
-                         (prin1-to-string (marshal:marshal arg)))
-                       args))
+    ("args" . ,args)
     ("jid" . ,(generate-random-id))
     ("created_at" . ,(timestamp-to-unix (now)))))
 
@@ -48,7 +46,4 @@
       (check-type class symbol)
       (let ((worker (make-instance class)))
         (check-type worker worker)
-        (values worker
-                (mapcar (lambda (arg)
-                          (marshal:unmarshal (read-from-string arg)))
-                        (cdr args)))))))
+        (values worker (cdr args))))))
