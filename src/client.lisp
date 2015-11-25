@@ -137,8 +137,12 @@
           (red:zcard (redis-key "dead"))
           (red:lrange (redis-key "queue" "default") -1 -1)
           (red:smembers (redis-key "queues")))
-      `(:processed ,(parse-integer processed)
-        :failed    ,(parse-integer failed)
+      `(:processed ,(if processed
+                        (parse-integer processed)
+                        0)
+        :failed    ,(if failed
+                        (parse-integer failed)
+                        0)
         :scheduled ,schedule
         :retry ,retry
         :dead ,dead
