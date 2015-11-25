@@ -11,6 +11,7 @@
   (:import-from #:alexandria
                 #:ensure-list)
   (:export #:enqueue-to-queue
+           #:enqueue-to-scheduled-queue
            #:dequeue-from-queue))
 (in-package :psychiq.queue)
 
@@ -20,6 +21,14 @@
     (red:sadd (redis-key "queues") queue)
     (red:rpush (redis-key "queue" queue)
                (encode-object job-info)))
+  job-info)
+
+(defun enqueue-to-scheduled-queue (job-info at)
+  (check-type at fixnum)
+  (with-redis-transaction
+    (red:zadd (redis-key "schedule")
+              (princ-to-string at)
+              (encode-object job-info)))
   job-info)
 
 (defun dequeue-from-queue (queue-or-queues &key (timeout 5))

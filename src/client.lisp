@@ -13,10 +13,16 @@
                 #:decode-object)
   (:import-from #:psychiq.queue
                 #:enqueue-to-queue
+                #:enqueue-to-scheduled-queue
                 #:dequeue-from-queue)
+  (:import-from #:local-time
+                #:timestamp-to-unix
+                #:timestamp+
+                #:now)
   (:import-from #:alexandria
                 #:ensure-list)
   (:export #:enqueue
+           #:enqueue-in-sec
            #:dequeue
            #:all-queues
            #:queue-length
@@ -35,6 +41,17 @@
                 (allocate-instance (find-class worker-class)))))
     (with-connection *connection*
       (enqueue-to-queue queue job-info))))
+
+(defun enqueue-in-sec (interval worker-class &optional args)
+  (check-type interval fixnum)
+  (assert (< 0 interval))
+  (let ((job-info (encode-job worker-class args))
+        (queue (queue-name
+                (allocate-instance (find-class worker-class)))))
+    (setf (aget job-info "queue") queue)
+    (with-connection *connection*
+      (enqueue-to-scheduled-queue job-info
+                                  (timestamp-to-unix (timestamp+ (now) interval :sec))))))
 
 (defun dequeue (&optional
                   (queue-or-queues *default-queue-name*)

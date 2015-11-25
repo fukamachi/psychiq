@@ -78,14 +78,15 @@
   t)
 
 (defun enqueue-jobs (now)
-  (loop for payload = (first
-                       (red:zrangebyscore (redis-key "retry")
-                                          "-inf"
-                                          now
-                                          :limit '(0 . 1)))
-        while payload
-        do (red:zrem (redis-key "retry") payload)
-           (let* ((job-info (decode-object payload))
-                  (queue (or (aget job-info "queue") *default-queue-name*)))
-             (enqueue-to-queue queue job-info)
-             (vom:debug "Enqueued to ~A: ~S" queue job-info))))
+  (dolist (queue '("retry" "schedule"))
+    (loop for payload = (first
+                         (red:zrangebyscore (redis-key queue)
+                                            "-inf"
+                                            now
+                                            :limit '(0 . 1)))
+          while payload
+          do (red:zrem (redis-key queue) payload)
+             (let* ((job-info (decode-object payload))
+                    (queue (or (aget job-info "queue") *default-queue-name*)))
+               (enqueue-to-queue queue job-info)
+               (vom:debug "Enqueued to ~A: ~S" queue job-info)))))

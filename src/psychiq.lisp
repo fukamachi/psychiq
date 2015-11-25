@@ -15,7 +15,7 @@
                            :include '(#:worker #:perform #:queue-name #:max-retries))
 
 (cl-reexport:reexport-from :psychiq.client
-                           :include '(#:enqueue #:dequeue
+                           :include '(#:enqueue #:enqueue-in-sec #:dequeue
                                       #:all-queues #:queue-length #:queue-empty-p #:delete-queue #:slice-queue #:peek-queue
                                       #:all-retries #:retry-length
                                       #:all-dead-jobs))
