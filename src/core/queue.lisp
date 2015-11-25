@@ -28,7 +28,9 @@
                  (nconc
                   (mapcar (lambda (queue)
                             (redis-key "queue" queue))
-                          (ensure-list queue-or-queues))
+                          (remove-duplicates
+                           (ensure-list queue-or-queues)
+                           :from-end t))
                   (list timeout)))))
     (if ret
         (destructuring-bind (queue payload) ret

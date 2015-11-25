@@ -17,6 +17,8 @@
                 #:dequeue-from-queue)
   (:import-from #:psychiq.middleware.retry-jobs
                 #:*psychiq-middleware-retry-jobs*)
+  (:import-from #:alexandria
+                #:shuffle)
   (:export #:processor
            #:make-processor
            #:processor-status
@@ -58,9 +60,9 @@
 (defgeneric fetch-job (processor)
   (:method ((processor processor))
     (multiple-value-bind (job-info queue)
-        ;; TODO: allow to shuffle the queues
         (with-connection (processor-connection processor)
-          (dequeue-from-queue (processor-queues processor)
+          (dequeue-from-queue (shuffle
+                               (copy-seq (processor-queues processor)))
                               :timeout (processor-timeout processor)))
       (if job-info
           (progn
