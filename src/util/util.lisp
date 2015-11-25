@@ -6,6 +6,7 @@
 
 (cl-reexport:reexport-from :psychiq.util.assoc)
 (cl-reexport:reexport-from :psychiq.util.redis)
+(cl-reexport:reexport-from :psychiq.util.concurrency)
 
 (defun symbol-name-with-package (symbol)
   (let ((package (symbol-package symbol)))

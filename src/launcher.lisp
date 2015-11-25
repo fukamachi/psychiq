@@ -11,8 +11,6 @@
                 #:manager-count)
   (:import-from #:psychiq.launcher.processor
                 #:processor-thread)
-  (:import-from #:psychiq.connection
-                #:make-connection)
   (:import-from #:alexandria
                 #:ensure-list)
   (:export #:launcher
@@ -67,11 +65,13 @@
 
 (defun stop (launcher)
   (psychiq.launcher.manager:stop (launcher-manager launcher))
-  (psychiq.launcher.scheduled:stop (launcher-scheduled launcher)))
+  (psychiq.launcher.scheduled:stop (launcher-scheduled launcher))
+  t)
 
 (defun kill (launcher)
   (psychiq.launcher.manager:kill (launcher-manager launcher))
-  (psychiq.launcher.scheduled:kill (launcher-scheduled launcher)))
+  (psychiq.launcher.scheduled:kill (launcher-scheduled launcher))
+  t)
 
 (defun launcher-status (launcher)
   (let ((manager-stopped-p

@@ -52,9 +52,10 @@
                   ((:file "retry-jobs")))
                  (:module "util"
                   :components
-                  ((:file "util" :depends-on ("assoc" "redis"))
+                  ((:file "util" :depends-on ("assoc" "redis" "concurrency"))
                    (:file "assoc")
-                   (:file "redis")))))
+                   (:file "redis")
+                   (:file "concurrency")))))
                (:file "src/specials"))
   :description "Redis-backed job queueing system"
   :long-description

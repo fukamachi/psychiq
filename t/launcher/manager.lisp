@@ -18,7 +18,9 @@
   (:import-from #:psychiq.util.assoc
                 #:aget)
   (:import-from #:psychiq.util.redis
-                #:redis-key))
+                #:redis-key)
+  (:import-from #:psychiq.util.concurrency
+                #:get-value))
 (in-package :psychiq-test.launcher.manager)
 
 (plan 4)
@@ -51,6 +53,8 @@
     (start manager)
     (sleep 1.2)
     (is *perform-result* t)
+    (is (get-value (manager-stat-processed manager)) 1)
+    (is (get-value (manager-stat-failed manager)) 0)
     (kill manager)))
 
 (subtest "processor died"
@@ -87,6 +91,9 @@
                  (is (aget failed-info "error_message") "Failed")
                  (ok (aget failed-info "error_backtrace"))
                  (is (aget failed-info "retry_count") 0))))
+
+           (is (get-value (manager-stat-processed manager)) 1)
+           (is (get-value (manager-stat-failed manager)) 1)
            (stop manager)
            (sleep 1))
       (disconnect conn)
