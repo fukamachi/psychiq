@@ -18,6 +18,7 @@ Options:
     -s, --system SYSTEM             ASDF system to load before starting (several -s's allowed)
     -v, --verbose                   Print more verbose output
     -n, --namespace NAMESPACE       Redis namespace (default: \"psychiq\")
+    -V, --version                   Print version
     -h, --help                      Show help
 ")
   (uiop:quit -1))
@@ -78,6 +79,11 @@ Options:
                   (add-option :namespace (pop args)))
                  (("-v" "--verbose")
                   (vom:config t :debug))
+                 (("-V" "--version")
+                  (format *error-output*
+                          "~&Psychiq ~A~%"
+                          (asdf:component-version (asdf:find-system :psychiq)))
+                  (uiop:quit -1))
                  (("-h" "--help")
                   (print-usage))
                  (otherwise
