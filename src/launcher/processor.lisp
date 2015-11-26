@@ -130,8 +130,7 @@
                        (vom:warn "Job ~A failed with ~S: ~A"
                                  (aget job-info "class")
                                  (class-name (class-of condition))
-                                 condition)
-                       (vom:warn (prin1-to-string job-info)))))
+                                 condition))))
       (let ((worker (decode-job job-info)))
         ;; Applying default middlewares
         (with-connection (processor-connection processor)
