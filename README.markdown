@@ -10,7 +10,7 @@ Psychiq provides background job processing for Common Lisp applications inspired
 
 This software is still ALPHA quality. The APIs will be likely to change.
 
-## Usage
+## Getting Started
 
 ### Writing a worker
 
@@ -19,7 +19,7 @@ This software is still ALPHA quality. The APIs will be likely to change.
 
 (defclass my-worker (psy:worker) ())
 (defmethod psy:perform ((worker my-worker) &rest args)
-  ;; blah blah blah
+  ;; Do something
   )
 ```
 
@@ -29,11 +29,12 @@ This software is still ALPHA quality. The APIs will be likely to change.
 ;; Enqueueing to "default" queue
 (psy:enqueue 'my-worker '("arg1" "arg2"))
 
-;; Enqueueing to the specific queue
-(defmethod psy:queue-name ((worker my-worker))
-  "myapp-job")
+;; Enqueueing the job after 300 seconds.
+(psy:enqueue-in-sec 300 'my-worker '("arg1" "arg2"))
 
-(psy:enqueue 'my-worker '("arg1" "arg2"))
+;; Enqueueing a large number of jobs at a time
+;; This is useful if you are pushing tens of thousands of jobs or more
+(psy:enqueue-bulk 'my-worker '("arg1" "arg2") '("another" "one") ...)
 ```
 
 The arguments must be simple JSON datatypes which can be serialized with Jonathan.
@@ -62,25 +63,50 @@ Options:
     -h, --help                      Show help
 ```
 
-### Max retry attempts
+## Worker options
 
-#### Option 1. Defining a method
+### Option 1. Defining a method
 
 ```common-lisp
 (defclass my-worker () ())
 
+;; Specify max retry attempts. (default: 25)
 (defmethod psy:worker-max-retries ((worker my-worker))
   1000)
+
+;; Use a named queue to push. (default: "default")
+(defmethod psy:worker-queue-name ((worker my-worker))
+  "my-worker-queue")
+
+;; Disable jobs going to the dead job queue. (default: T)
+(defmethod psy:worker-use-dead-queue-p ((worker my-worker))
+  nil)
+
+;; Whether to save any error backtrace in the retry payload. (default: NIL)
+(defmethod psy:worker-use-backtrace-p ((worker my-worker))
+  t)
 ```
 
-#### Option 2. Using a metaclass
+### Option 2. Using a metaclass
 
 ```common-lisp
 (defclass my-worker ()
     ()
   (:metaclass psy:worker-class)
-  (:retry 1000))
+  (:retry 1000)
+  (:queue "my-worker-queue")
+  (:dead nil)
+  (:backtrace t))
 ```
+
+## Signals
+
+- INT: graceful shutdown, waits for all processors are idle.
+- TERM: shutdown immediately
+
+## Error Handling
+
+When getting an error while performing a job, Psychiq will add the job to the "retry" queue. Jobs in the "retry" queue will be retried automatically with an exponential backoff. After 25 attempts, Psychiq move the job to the "dead" queue.
 
 ## Requirements
 
@@ -95,7 +121,7 @@ $ git clone https://github.com/fukamachi/psychiq
 ```
 
 ```
-$ ros install psychiq
+$ ros -l ~/common-lisp/psychiq/psychiq.asd install psychiq
 ```
 
 ## Author
