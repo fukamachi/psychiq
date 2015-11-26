@@ -72,7 +72,7 @@ Options:
 #### Option 2. Using a metaclass
 
 ```common-lisp
-(defclass my-worker (psy:worker)
+(defclass my-worker ()
     ()
   (:metaclass psy:worker-class)
   (:retry 1000))

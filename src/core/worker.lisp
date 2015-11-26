@@ -62,11 +62,43 @@
 (define-worker-class-method worker-use-backtrace-p backtrace
   :default nil)
 
+(defun contains-class-or-subclasses (class target-classes)
+  (flet ((class-inherit-p (target parent)
+            (not (null
+                  (member parent
+                          (c2mop:class-direct-superclasses target)
+                          :test #'eq)))))
+    (let ((class (if (typep class 'class)
+                     class
+                     (find-class class))))
+      (find-if (lambda (target-class)
+                 (let ((target-class (if (typep target-class 'class)
+                                         target-class
+                                         (find-class target-class nil))))
+                   (and target-class
+                        (or (eq target-class class)
+                            (class-inherit-p target-class class)))))
+               target-classes))))
+
+(defmethod initialize-instance :around ((class worker-class) &rest initargs
+                                        &key direct-superclasses &allow-other-keys)
+  (unless (contains-class-or-subclasses 'worker direct-superclasses)
+    (setf (getf initargs :direct-superclasses)
+          (cons (find-class 'worker) direct-superclasses)))
+  (apply #'call-next-method class initargs))
+
 (defmethod reinitialize-instance ((class worker-class) &rest initargs)
   (dolist (arg '(:retry :dead :queue :backtrace))
     (unless (getf initargs arg)
       (setf (getf initargs arg) nil)))
   (apply #'call-next-method class initargs))
+
+(defmethod c2mop:ensure-class-using-class :around ((class worker-class) name &rest keys
+                                                   &key direct-superclasses &allow-other-keys)
+  (unless (contains-class-or-subclasses 'worker direct-superclasses)
+    (setf (getf keys :direct-superclasses)
+          (cons (find-class 'worker) direct-superclasses)))
+  (apply #'call-next-method class name keys))
 
 (defmethod c2mop:validate-superclass ((class worker-class) (super standard-class))
   t)
