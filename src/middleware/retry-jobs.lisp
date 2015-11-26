@@ -18,12 +18,10 @@
 (defparameter *psychiq-middleware-retry-jobs*
   (lambda (next)
     (lambda (worker job-info queue)
-      (block middleware
-        (handler-bind ((error
-                         (lambda (e)
-                           (attempt-retry queue worker job-info e)
-                           (return-from middleware nil))))
-          (funcall next worker job-info queue))))))
+      (handler-bind ((error
+                       (lambda (e)
+                         (attempt-retry queue worker job-info e))))
+        (funcall next worker job-info queue)))))
 
 (defun backtrace (&optional (count-to-remove 0))
   ;; Remove the first stack (this function) anyway.
