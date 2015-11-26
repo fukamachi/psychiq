@@ -14,7 +14,7 @@
   (:export #:worker
            #:perform
            #:worker-class
-           #:worker-retry-count
+           #:worker-max-retries
            #:worker-use-dead-queue-p
            #:worker-queue-name
            #:worker-use-backtrace-p
@@ -53,7 +53,7 @@
                  ,default)
                ,default))))))
 
-(define-worker-class-method worker-retry-count retry
+(define-worker-class-method worker-max-retries retry
   :default *default-max-retry-attempts*)
 (define-worker-class-method worker-use-dead-queue-p dead
   :default t)

@@ -16,7 +16,7 @@
 (cl-reexport:reexport-from :psychiq.worker
                            :include '(#:worker #:perform
                                       #:worker-class
-                                      #:worker-retry-count
+                                      #:worker-max-retries
                                       #:worker-use-dead-queue-p
                                       #:worker-queue-name
                                       #:worker-use-backtrace-p))

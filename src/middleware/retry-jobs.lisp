@@ -4,7 +4,7 @@
         #:psychiq.specials
         #:psychiq.util)
   (:import-from #:psychiq.worker
-                #:worker-retry-count
+                #:worker-max-retries
                 #:worker-use-backtrace-p
                 #:worker-use-dead-queue-p)
   (:import-from #:psychiq.coder
@@ -42,7 +42,7 @@
 
 (defun attempt-retry (queue worker job-info e)
   (let ((options '())
-        (max-retries (worker-retry-count worker)))
+        (max-retries (worker-max-retries worker)))
 
     (nconcf options
             `(("error_message" . ,(princ-to-string e))

@@ -65,7 +65,9 @@ Options:
 #### Option 1. Defining a method
 
 ```common-lisp
-(defmethod psy:worker-retry-count ((worker my-worker))
+(defclass my-worker () ())
+
+(defmethod psy:worker-max-retries ((worker my-worker))
   1000)
 ```
 
