@@ -62,9 +62,20 @@ Options:
 
 ### Max retry attempts
 
+#### Option 1. Defining a method
+
 ```common-lisp
-(defmethod psy:max-retries ((worker my-worker))
+(defmethod psy:worker-retry-count ((worker my-worker))
   1000)
+```
+
+#### Option 2. Using a metaclass
+
+```common-lisp
+(defclass my-worker (psy:worker)
+    ()
+  (:metaclass psy:worker-class)
+  (:retry 1000))
 ```
 
 ## Requirements

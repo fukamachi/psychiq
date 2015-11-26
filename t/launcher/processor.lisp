@@ -15,7 +15,7 @@
   (:import-from #:psychiq.worker
                 #:worker
                 #:perform
-                #:queue-name)
+                #:worker-queue-name)
   (:import-from #:psychiq.client
                 #:enqueue)
   (:import-from #:psychiq.util.redis
@@ -40,7 +40,7 @@
 (defmethod perform ((worker my-worker) &rest args)
   (declare (ignore args))
   (setf *perform-result* t))
-(defmethod queue-name ((worker my-worker))
+(defmethod worker-queue-name ((worker my-worker))
   "test")
 
 (subtest "fetch-job & decode-job"

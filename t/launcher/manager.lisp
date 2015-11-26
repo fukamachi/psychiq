@@ -8,7 +8,7 @@
   (:import-from #:psychiq.worker
                 #:worker
                 #:perform
-                #:queue-name)
+                #:worker-queue-name)
   (:import-from #:psychiq.connection
                 #:with-connection
                 #:connect
@@ -38,7 +38,7 @@
     (declare (ignore args))
     (setf *perform-result* t)
     "OK")
-  (defmethod queue-name ((worker my-worker))
+  (defmethod worker-queue-name ((worker my-worker))
     "manager-test-normal-case")
   (let ((conn (connect))
         stats)
@@ -72,7 +72,7 @@
   (defmethod perform ((worker my-worker) &rest args)
     (declare (ignore args))
     (error "Failed"))
-  (defmethod queue-name ((worker my-worker))
+  (defmethod worker-queue-name ((worker my-worker))
     "manager-test-processor-died")
   (let ((conn (connect))
         (manager (make-manager :queues '("manager-test-processor-died") :timeout 1))
@@ -102,7 +102,7 @@
                  (is (aget failed-info "jid") (aget job-info "jid"))
                  (is (aget failed-info "error_class") "COMMON-LISP::SIMPLE-ERROR")
                  (is (aget failed-info "error_message") "Failed")
-                 (ok (aget failed-info "error_backtrace"))
+                 (is (aget failed-info "error_backtrace") nil)
                  (is (aget failed-info "retry_count") 0))))
 
            (with-connection conn

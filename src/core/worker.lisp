@@ -8,11 +8,16 @@
                 #:timestamp-to-unix
                 #:now)
   (:import-from #:alexandria
-                #:nconcf)
+                #:nconcf
+                #:if-let
+                #:with-gensyms)
   (:export #:worker
            #:perform
-           #:queue-name
-           #:max-retries
+           #:worker-class
+           #:worker-retry-count
+           #:worker-use-dead-queue-p
+           #:worker-queue-name
+           #:worker-use-backtrace-p
            #:encode-job
            #:decode-job))
 (in-package :psychiq.worker)
@@ -27,13 +32,44 @@
     (declare (ignore args))
     (error "PEFORM is not implemented for ~S" (class-name (class-of worker)))))
 
-(defgeneric queue-name (worker)
-  (:method ((worker worker))
-    *default-queue-name*))
+(defclass worker-class (standard-class)
+  ((retry :initarg :retry
+          :initform nil)
+   (dead :initarg :dead
+         :initform nil)
+   (queue :initarg :queue
+          :initform nil)
+   (backtrace :initarg :backtrace
+              :initform nil)))
 
-(defgeneric max-retries (worker)
-  (:method ((worker worker))
-    *default-max-retry-attempts*))
+(defmacro define-worker-class-method (name slot-name &key default)
+  (with-gensyms (val class worker)
+    `(defgeneric ,name (worker-class)
+       (:method ((,worker worker))
+         (let ((,class (class-of ,worker)))
+           (if (typep ,class 'worker-class)
+               (if-let (,val (slot-value ,class ',slot-name))
+                 (first ,val)
+                 ,default)
+               ,default))))))
+
+(define-worker-class-method worker-retry-count retry
+  :default *default-max-retry-attempts*)
+(define-worker-class-method worker-use-dead-queue-p dead
+  :default t)
+(define-worker-class-method worker-queue-name queue
+  :default *default-queue-name*)
+(define-worker-class-method worker-use-backtrace-p backtrace
+  :default nil)
+
+(defmethod reinitialize-instance ((class worker-class) &rest initargs)
+  (dolist (arg '(:retry :dead :queue :backtrace))
+    (unless (getf initargs arg)
+      (setf (getf initargs arg) nil)))
+  (apply #'call-next-method class initargs))
+
+(defmethod c2mop:validate-superclass ((class worker-class) (super standard-class))
+  t)
 
 (defun encode-job (worker-class args)
   `(("class" . ,(symbol-name-with-package worker-class))

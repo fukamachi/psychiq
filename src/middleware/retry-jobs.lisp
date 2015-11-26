@@ -4,7 +4,9 @@
         #:psychiq.specials
         #:psychiq.util)
   (:import-from #:psychiq.worker
-                #:max-retries)
+                #:worker-retry-count
+                #:worker-use-backtrace-p
+                #:worker-use-dead-queue-p)
   (:import-from #:psychiq.coder
                 #:encode-object)
   (:import-from #:local-time
@@ -40,16 +42,14 @@
 
 (defun attempt-retry (queue worker job-info e)
   (let ((options '())
-        (max-retries (max-retries worker)))
-    (setf max-retries
-          (if (numberp max-retries)
-              max-retries
-              *default-max-retry-attempts*))
+        (max-retries (worker-retry-count worker)))
 
     (nconcf options
             `(("error_message" . ,(princ-to-string e))
               ("error_class" . ,(symbol-name-with-package (class-name (class-of e))))
-              ("error_backtrace" . ,(backtrace 1))))
+              ,@(if (worker-use-backtrace-p worker)
+                    `(("error_backtrace" . ,(backtrace 1)))
+                    ())))
 
     (setf (aget options "queue") queue)
 
@@ -78,7 +78,8 @@
                        (princ-to-string retry-at)
                        payload))))
         (t
-         (send-to-morgue job-info))))))
+         (when (worker-use-dead-queue-p worker)
+           (send-to-morgue job-info)))))))
 
 (defun delay-for (retry-count)
   (+ (expt retry-count 4) 15 (* (random 30) (1+ retry-count))))

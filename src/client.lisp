@@ -7,7 +7,7 @@
                 #:with-connection
                 #:*connection*)
   (:import-from #:psychiq.worker
-                #:queue-name
+                #:worker-queue-name
                 #:encode-job)
   (:import-from #:psychiq.coder
                 #:encode-object
@@ -40,13 +40,13 @@
 
 (defun enqueue (worker-class &optional args)
   (let ((job-info (encode-job worker-class args))
-        (queue (queue-name
+        (queue (worker-queue-name
                 (allocate-instance (find-class worker-class)))))
     (with-connection *connection*
       (enqueue-to-queue queue job-info))))
 
 (defun enqueue-bulk (worker-class job-args &rest more-job-args)
-  (let ((queue (queue-name
+  (let ((queue (worker-queue-name
                 (allocate-instance (find-class worker-class))))
         (now (timestamp-to-unix (now)))
         (jobs '()))
@@ -65,7 +65,7 @@
   (check-type interval fixnum)
   (assert (< 0 interval))
   (let ((job-info (encode-job worker-class args))
-        (queue (queue-name
+        (queue (worker-queue-name
                 (allocate-instance (find-class worker-class)))))
     (setf (aget job-info "queue") queue)
     (with-connection *connection*

@@ -14,7 +14,12 @@
                                       #:with-connection #:connectedp))
 
 (cl-reexport:reexport-from :psychiq.worker
-                           :include '(#:worker #:perform #:queue-name #:max-retries))
+                           :include '(#:worker #:perform
+                                      #:worker-class
+                                      #:worker-retry-count
+                                      #:worker-use-dead-queue-p
+                                      #:worker-queue-name
+                                      #:worker-use-backtrace-p))
 
 (cl-reexport:reexport-from :psychiq.client
                            :include '(#:enqueue #:enqueue-bulk #:enqueue-in-sec #:dequeue
