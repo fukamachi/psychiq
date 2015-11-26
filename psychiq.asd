@@ -50,7 +50,8 @@
                  (:module "middleware"
                   :depends-on ("core" "util")
                   :components
-                  ((:file "retry-jobs")))
+                  ((:file "retry-jobs")
+                   (:file "logging")))
                  (:module "util"
                   :components
                   ((:file "util" :depends-on ("assoc" "redis" "concurrency"))

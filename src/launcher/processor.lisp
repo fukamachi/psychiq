@@ -17,6 +17,8 @@
                 #:dequeue-from-queue)
   (:import-from #:psychiq.middleware.retry-jobs
                 #:*psychiq-middleware-retry-jobs*)
+  (:import-from #:psychiq.middleware.logging
+                #:*psychiq-middleware-logging*)
   (:import-from #:alexandria
                 #:shuffle)
   (:export #:processor
@@ -141,13 +143,17 @@
         ;; Applying default middlewares
         (with-connection (processor-connection processor)
           (funcall
-           (funcall *psychiq-middleware-retry-jobs*
-                    (lambda (worker job-info queue)
-                      (apply #'perform-job
-                             processor
-                             queue
-                             worker
-                             (aget job-info "args"))))
+           (reduce #'funcall
+                   (list *psychiq-middleware-retry-jobs*
+                         *psychiq-middleware-logging*)
+                   :initial-value
+                   (lambda (worker job-info queue)
+                     (apply #'perform-job
+                            processor
+                            queue
+                            worker
+                            (aget job-info "args")))
+                   :from-end t)
            worker job-info queue))))))
 
 (defgeneric perform-job (processor queue worker &rest args)
