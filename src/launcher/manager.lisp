@@ -77,8 +77,6 @@
     (setf (manager-children manager)
           (delete processor (manager-children manager) :test #'eq))
     (unless (manager-stopped-p manager)
-      (vom:warn "Processor died with ~S: ~A" (class-name (class-of e)) e)
-      (vom:debug "Adding a new processor...")
       (let ((new-processor
               (funcall (manager-make-processor-fn manager))))
         (push new-processor (manager-children manager))

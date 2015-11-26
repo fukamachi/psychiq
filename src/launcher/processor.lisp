@@ -76,10 +76,8 @@
       while (eq (processor-status processor) :running)
       do (multiple-value-bind (job-info queue)
              (fetch-job processor)
-           (if job-info
-               (process-job processor queue job-info)
-               (vom:debug "Timed out after ~D seconds"
-                          (processor-timeout processor)))))))
+           (when job-info
+             (process-job processor queue job-info))))))
 
 (defgeneric finalize (processor)
   (:method ((processor processor))
@@ -122,9 +120,9 @@
 
 (defgeneric process-job (processor queue job-info)
   (:method ((processor processor) queue job-info)
-    (vom:info "Got: ~S (ID: ~A)"
-              (aget job-info "class")
-              (aget job-info "jid"))
+    (vom:debug "Got: ~S (ID: ~A)"
+               (aget job-info "class")
+               (aget job-info "jid"))
     (handler-bind ((error
                      (lambda (condition)
                        (vom:warn "Job ~A failed with ~S: ~A"

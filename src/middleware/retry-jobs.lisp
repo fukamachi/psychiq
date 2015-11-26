@@ -70,9 +70,9 @@
         ((< retry-count max-retries)
          (let* ((delay (delay-for retry-count))
                 (retry-at (+ (timestamp-to-unix (now)) delay)))
-           (vom:info "Failure! Retry ~A in ~A seconds"
-                     retry-count
-                     delay)
+           (vom:debug "Failure! Retry ~A in ~A seconds"
+                      retry-count
+                      delay)
            (let ((payload (encode-object job-info)))
              (red:zadd (redis-key "retry")
                        (princ-to-string retry-at)
