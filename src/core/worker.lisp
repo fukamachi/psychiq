@@ -51,4 +51,4 @@
       (check-type class symbol)
       (let ((worker (make-instance class)))
         (check-type worker worker)
-        (values worker (cdr args))))))
+        worker))))

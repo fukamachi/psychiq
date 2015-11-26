@@ -3,8 +3,6 @@
   (:use #:cl
         #:psychiq.specials
         #:psychiq.util)
-  (:import-from #:psychiq.connection
-                #:with-connection)
   (:import-from #:psychiq.worker
                 #:max-retries)
   (:import-from #:psychiq.coder
@@ -19,17 +17,13 @@
 
 (defparameter *psychiq-middleware-retry-jobs*
   (lambda (next)
-    (lambda (conn job-info queue)
+    (lambda (worker job-info queue)
       (block middleware
         (handler-bind ((error
                          (lambda (e)
-                           (let ((worker-class
-                                   (ignore-errors
-                                    (read-from-string (aget job-info "class")))))
-                             (when worker-class
-                               (attempt-retry conn queue worker-class job-info e)
-                               (return-from middleware nil))))))
-          (funcall next job-info))))))
+                           (attempt-retry queue worker job-info e)
+                           (return-from middleware nil))))
+          (funcall next worker job-info queue))))))
 
 (defun backtrace (&optional (count-to-remove 0))
   ;; Remove the first stack (this function) anyway.
@@ -46,10 +40,9 @@
                      (dissect:args stack))))
          (nthcdr count-to-remove (dissect:stack)))))
 
-(defun attempt-retry (conn queue worker-class job-info e)
+(defun attempt-retry (queue worker job-info e)
   (let ((options '())
-        (max-retries
-          (max-retries (allocate-instance (find-class worker-class)))))
+        (max-retries (max-retries worker)))
     (setf max-retries
           (if (numberp max-retries)
               max-retries
@@ -83,12 +76,11 @@
                      retry-count
                      delay)
            (let ((payload (encode-object job-info)))
-             (with-connection conn
-               (red:zadd (redis-key "retry")
-                         (princ-to-string retry-at)
-                         payload)))))
+             (red:zadd (redis-key "retry")
+                       (princ-to-string retry-at)
+                       payload))))
         (t
-         (send-to-morgue conn job-info))))))
+         (send-to-morgue job-info))))))
 
 (defun delay-for (retry-count)
   (+ (expt retry-count 4) 15 (* (random 30) (1+ retry-count))))
@@ -100,20 +92,19 @@
 (defparameter *dead-max-jobs*
   10000)
 
-(defun send-to-morgue (conn job-info)
+(defun send-to-morgue (job-info)
   (vom:info "Adding dead ~S job ~S"
             (aget job-info "class")
             (aget job-info "jid"))
   (let ((payload (encode-object job-info))
         (now (timestamp-to-unix (now))))
-    (with-connection conn
-      (with-redis-transaction
-        (red:zadd (redis-key "dead")
-                  now
-                  payload)
-        (red:zremrangebyscore (redis-key "dead")
-                              "-inf"
-                              (- now *dead-timeout-in-seconds*))
-        (red:zremrangebyrank (redis-key "dead")
-                             0
-                             -10000)))))
+    (with-redis-transaction
+      (red:zadd (redis-key "dead")
+                now
+                payload)
+      (red:zremrangebyscore (redis-key "dead")
+                            "-inf"
+                            (- now *dead-timeout-in-seconds*))
+      (red:zremrangebyrank (redis-key "dead")
+                           0
+                           -10000))))
