@@ -29,6 +29,7 @@
            #:start
            #:stop
            #:kill
+           #:wait-for
            #:finalize
            #:fetch-job
            #:process-job
@@ -116,6 +117,13 @@
       (when (and (bt:threadp thread)
                  (bt:thread-alive-p thread))
         (bt:destroy-thread thread)))
+    t))
+
+(defgeneric wait-for (object)
+  (:method ((processor processor))
+    (let ((thread (processor-thread processor)))
+      (when (bt:threadp thread)
+        (bt:join-thread thread)))
     t))
 
 (defgeneric process-job (processor queue job-info)

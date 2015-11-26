@@ -20,7 +20,8 @@
            #:manager-stat-failed
            #:start
            #:stop
-           #:kill))
+           #:kill
+           #:wait-for))
 (in-package :psychiq.launcher.manager)
 
 (defstruct (manager (:constructor
@@ -135,6 +136,13 @@
     (when (bt:threadp thread)
       (bt:destroy-thread thread)))
   (vom:info "Exiting...")
+  t)
+
+(defmethod wait-for ((manager manager))
+  (map nil #'wait-for (manager-children manager))
+  (let ((thread (manager-heartbeat-thread manager)))
+    (when (bt:threadp thread)
+      (bt:join-thread thread)))
   t)
 
 (defun start-heartbeat (manager)

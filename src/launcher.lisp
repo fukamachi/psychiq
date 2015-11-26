@@ -9,8 +9,8 @@
                 #:manager-queues
                 #:manager-children
                 #:manager-count)
-  (:import-from #:psychiq.launcher.processor
-                #:processor-thread)
+  (:import-from #:psychiq.launcher.scheduled
+                #:scheduled-thread)
   (:import-from #:alexandria
                 #:ensure-list)
   (:export #:launcher
@@ -18,8 +18,8 @@
            #:start
            #:stop
            #:kill
-           #:launcher-status
-           #:wait-for-processors))
+           #:wait-for
+           #:launcher-status))
 (in-package :psychiq.launcher)
 
 (defstruct (launcher (:constructor %make-launcher))
@@ -53,10 +53,10 @@
   (declare (ignore host port concurrency queue))
   (start (apply #'make-launcher initargs)))
 
-(defun wait-for-processors (launcher)
-  (map nil #'bt:join-thread
-       (mapcar #'processor-thread
-               (manager-children (launcher-manager launcher)))))
+(defun wait-for (launcher)
+  (psychiq.launcher.manager:wait-for (launcher-manager launcher))
+  (bt:join-thread (scheduled-thread (launcher-scheduled launcher)))
+  t)
 
 (defun start (launcher)
   (psychiq.launcher.manager:start (launcher-manager launcher))

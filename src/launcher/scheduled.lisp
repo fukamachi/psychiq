@@ -16,6 +16,7 @@
                 #:now)
   (:export #:scheduled
            #:scheduled-status
+           #:scheduled-thread
            #:start
            #:stop
            #:kill

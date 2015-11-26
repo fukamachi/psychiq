@@ -137,4 +137,4 @@ Options:
         (setf (trivial-signal:signal-handler :term) #'handle-sigterm)
         (setf (trivial-signal:signal-handler :int)  #'handle-sigint)
         (with-handle-interrupt (lambda () (handle-sigint trivial-signal:+sigint+))
-          (psychiq.launcher:wait-for-processors launcher))))))
+          (psychiq.launcher:wait-for launcher))))))
