@@ -20,14 +20,16 @@
 (defparameter *psychiq-middleware-retry-jobs*
   (lambda (next)
     (lambda (conn job-info queue)
-      (handler-bind ((error
-                       (lambda (e)
-                         (let ((worker-class
-                                 (ignore-errors
-                                  (read-from-string (aget job-info "class")))))
-                           (when worker-class
-                             (attempt-retry conn queue worker-class job-info e))))))
-        (funcall next job-info)))))
+      (block middleware
+        (handler-bind ((error
+                         (lambda (e)
+                           (let ((worker-class
+                                   (ignore-errors
+                                    (read-from-string (aget job-info "class")))))
+                             (when worker-class
+                               (attempt-retry conn queue worker-class job-info e)
+                               (return-from middleware nil))))))
+          (funcall next job-info))))))
 
 (defun backtrace (&optional (count-to-remove 0))
   ;; Remove the first stack (this function) anyway.
