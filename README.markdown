@@ -23,7 +23,9 @@ This software is still ALPHA quality. The APIs will be likely to change.
   )
 ```
 
-### Enqueueing
+The worker class is commonly written in an individual ASDF system because it must be shared with clients and servers.
+
+### Enqueueing (Client)
 
 ```common-lisp
 ;; Enqueueing to "default" queue
@@ -39,7 +41,7 @@ This software is still ALPHA quality. The APIs will be likely to change.
 
 The arguments must be simple JSON datatypes which can be serialized with Jonathan.
 
-### Starting processing
+### Starting processing (Server)
 
 Psychiq provides a [Roswell](https://github.com/snmsts/roswell) script for starting processing:
 
@@ -52,23 +54,21 @@ $ psychiq -h
 Usage: psychiq [option...]
 
 Options:
-    -o, --host HOST                 Redis server host
-    -p, --port PORT                 Redis server port
+    -o, --host HOST                 Redis server host (default: localhost)
+    -p, --port PORT                 Redis server port (default: 6379)
     -q, --queue QUEUE[,WEIGHT]      Queues to process with optional weights (several -q's allowed)
     -c, --concurrency INT           Processor threads to use (default: 25)
     -s, --system SYSTEM             ASDF system to load before starting (several -s's allowed)
     -v, --verbose                   Print more verbose output
-    -n, --namespace NAMESPACE       Redis namespace (default: \"psychiq\")
+    -n, --namespace NAMESPACE       Redis namespace (default: "psychiq")
     -V, --version                   Print version
     -h, --help                      Show help
 ```
 
 ## Worker options
 
-### Option 1. Defining a method
-
 ```common-lisp
-(defclass my-worker () ())
+(defclass my-worker (psy:worker) ())
 
 ;; Specify max retry attempts. (default: 25)
 (defmethod psy:worker-max-retries ((worker my-worker))
@@ -110,6 +110,7 @@ When getting an error while performing a job, Psychiq will add the job to the "r
 
 ## Requirements
 
+* SBCL (compiled with sb-thread) or Clozure CL
 * Redis
 * [Roswell](https://github.com/snmsts/roswell) for command-line launcher script.
 
