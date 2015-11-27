@@ -23,7 +23,6 @@
                :local-time
                :cl-reexport
                :bordeaux-threads
-               :closer-mop
                :dissect
                :vom
                :alexandria)

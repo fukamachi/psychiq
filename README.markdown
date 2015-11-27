@@ -87,18 +87,6 @@ Options:
   t)
 ```
 
-### Option 2. Using a metaclass
-
-```common-lisp
-(defclass my-worker ()
-    ()
-  (:metaclass psy:worker-class)
-  (:retry 1000)
-  (:queue "my-worker-queue")
-  (:dead nil)
-  (:backtrace t))
-```
-
 ## Signals
 
 - INT: graceful shutdown, waits for all processors are idle.
