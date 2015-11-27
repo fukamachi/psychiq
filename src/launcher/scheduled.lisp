@@ -45,8 +45,9 @@
                    (loop while (eq (scheduled-status scheduled) :running)
                          do (handler-case (with-connection conn
                                             (enqueue-jobs (timestamp-to-unix (now))))
-                              (error (e)
-                                (vom:error "~A" e)))
+                              (redis:redis-connection-error (e)
+                                (vom:error "polling scheduled: ~A" e)
+                                (disconnect conn)))
                             (sleep (scaled-poll-interval)))
                 (disconnect (scheduled-connection scheduled))
                 (setf (scheduled-thread scheduled) nil)

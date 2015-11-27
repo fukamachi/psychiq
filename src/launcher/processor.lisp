@@ -44,7 +44,8 @@
   (manager nil)
   (thread nil)
   (status :stopped)
-  (timeout 5))
+  (timeout 5)
+  down)
 
 (defmethod print-object ((processor processor) stream)
   (print-unreadable-object (processor stream :type processor)
@@ -62,16 +63,33 @@
 
 (defgeneric fetch-job (processor)
   (:method ((processor processor))
-    (multiple-value-bind (job-info queue)
-        (with-connection (processor-connection processor)
-          (dequeue-from-queue (shuffle
-                               (copy-seq (processor-queues processor)))
-                              :timeout (processor-timeout processor)))
-      (if job-info
-          (progn
-            (vom:debug "Found job on ~A" queue)
-            (values job-info queue))
-          nil))))
+    (handler-bind ((redis:redis-connection-error
+                     (lambda (e)
+                       (unless (processor-down processor)
+                         (setf (processor-down processor)
+                               (get-internal-real-time))
+                         (vom:error "Error fetching job (~S): ~A"
+                                    (class-name (class-of e))
+                                    e)
+                         (disconnect (processor-connection processor)))
+                       (sleep 1)
+                       (return-from fetch-job nil))))
+      (multiple-value-bind (job-info queue)
+          (with-connection (processor-connection processor)
+            (dequeue-from-queue (shuffle
+                                 (copy-seq (processor-queues processor)))
+                                :timeout (processor-timeout processor)))
+        (when (processor-down processor)
+          (vom:info "Redis is online, ~A sec downtime"
+                    (/ (- (get-internal-real-time)
+                           (processor-down processor))
+                       1000.0))
+          (setf (processor-down processor) nil))
+        (if job-info
+            (progn
+              (vom:debug "Found job on ~A" queue)
+              (values job-info queue))
+            nil)))))
 
 (defgeneric run (processor)
   (:method ((processor processor))

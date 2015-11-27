@@ -150,10 +150,14 @@
   (let ((conn (connect :host (manager-host manager)
                        :port (manager-port manager))))
     (unwind-protect
-         (with-connection conn
-           (loop
-             (heartbeat manager)
-             (sleep 5)))
+         (loop
+           (handler-case
+               (with-connection conn
+                 (heartbeat manager))
+             (redis:redis-connection-error (e)
+               (vom:error "heartbeat: ~A" e)
+               (disconnect conn)))
+           (sleep 5))
       (vom:info "Heartbeat stopping...")
       (disconnect conn)
       (setf (manager-heartbeat-thread manager) nil))))
@@ -163,19 +167,18 @@
         (failed    (reset-value (manager-stat-failed manager)))
         (today (format-timestring nil (today)
                                   :format '((:year 4) #\- (:month 2) #\- (:day 2)))))
-    (handler-case
-        (redis:with-pipelining
-          (red:incrby (redis-key "stat" "processed")
-                      processed)
-          (red:incrby (redis-key "stat" "processed" today)
-                      processed)
-          (red:incrby (redis-key "stat" "failed")
-                      failed)
-          (red:incrby (redis-key "stat" "failed" today)
-                      failed))
-      (error (e)
-        ;; Ignore all redis/network issues
-        (vom:error "heartbeat: ~A" e)
-        ;; Don't lose the counts if there was a network issue
-        (setf (get-value (manager-stat-processed manager)) processed)
-        (setf (get-value (manager-stat-failed manager)) failed)))))
+    (handler-bind ((error
+                     (lambda (e)
+                       (declare (ignore e))
+                       ;; Don't lose the counts if there was a network issue
+                       (setf (get-value (manager-stat-processed manager)) processed)
+                       (setf (get-value (manager-stat-failed manager)) failed))))
+      (redis:with-pipelining
+        (red:incrby (redis-key "stat" "processed")
+                    processed)
+        (red:incrby (redis-key "stat" "processed" today)
+                    processed)
+        (red:incrby (redis-key "stat" "failed")
+                    failed)
+        (red:incrby (redis-key "stat" "failed" today)
+                    failed)))))
