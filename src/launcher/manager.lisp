@@ -73,6 +73,7 @@
   (values))
 
 (defun processor-died (manager processor e)
+  (declare (ignore e))
   (bt:with-recursive-lock-held ((manager-lock manager))
     (stop processor)
     (setf (manager-children manager)
