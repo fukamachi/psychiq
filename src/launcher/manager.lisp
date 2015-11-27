@@ -113,7 +113,10 @@
   (map nil #'start (manager-children manager))
   (setf (manager-heartbeat-thread manager)
         (bt:make-thread
-         (lambda () (start-heartbeat manager))))
+         (lambda () (start-heartbeat manager))
+         :initial-bindings `((*standard-output* . ,*standard-output*)
+                             (*error-output* . ,*error-output*))
+         :name "psychiq heartbeat"))
   manager)
 
 (defmethod stop ((manager manager))
