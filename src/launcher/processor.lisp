@@ -23,6 +23,7 @@
                 #:shuffle)
   (:export #:processor
            #:make-processor
+           #:processor-id
            #:processor-status
            #:processor-manager
            #:processor-connection
@@ -39,6 +40,7 @@
 (in-package :psychiq.launcher.processor)
 
 (defstruct (processor (:constructor %make-processor))
+  (id (generate-random-id 9))
   (connection nil :type connection)
   (queues '() :type list)
   (manager nil)
@@ -48,7 +50,7 @@
   down)
 
 (defmethod print-object ((processor processor) stream)
-  (print-unreadable-object (processor stream :type processor)
+  (print-unreadable-object (processor stream :type t)
     (with-slots (queues status) processor
       (format stream "QUEUES: ~A / STATUS: ~A"
               queues

@@ -25,6 +25,7 @@
                :bordeaux-threads
                :dissect
                :vom
+               :uiop
                :alexandria)
   :components ((:module "src"
                 :depends-on ("src/specials")

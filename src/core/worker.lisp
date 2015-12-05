@@ -1,6 +1,7 @@
 (in-package :cl-user)
 (defpackage psychiq.worker
   (:use #:cl
+        #:psychiq.util
         #:psychiq.specials)
   (:import-from #:psychiq.util
                 #:symbol-name-with-package)
@@ -20,9 +21,6 @@
            #:encode-job
            #:decode-job))
 (in-package :psychiq.worker)
-
-(defun generate-random-id (&optional (length 12))
-  (format nil "~(~36,8,'0R~)" (random (expt 36 length))))
 
 (defclass worker () ())
 

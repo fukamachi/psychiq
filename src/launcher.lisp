@@ -39,7 +39,7 @@
     (%make-launcher :manager manager :scheduled scheduled)))
 
 (defmethod print-object ((launcher launcher) stream)
-  (print-unreadable-object (launcher stream :type launcher)
+  (print-unreadable-object (launcher stream :type t)
     (let ((manager (launcher-manager launcher)))
       (format stream "REDIS: ~A:~A / CONCURRENCY: ~A / QUEUE: ~A / STATUS: ~A"
               (manager-host manager)

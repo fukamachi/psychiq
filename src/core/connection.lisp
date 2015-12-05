@@ -36,7 +36,7 @@
           :accessor redis-connection)))
 
 (defmethod print-object ((conn connection) stream)
-  (print-unreadable-object (conn stream :type conn)
+  (print-unreadable-object (conn stream :type t)
     (format stream "~A:~D"
             (slot-value conn 'host)
             (slot-value conn 'port))))
