@@ -6,12 +6,18 @@
                 #:with-connection
                 #:connect
                 #:disconnect)
+  (:import-from #:psychiq.coder
+                #:encode-object)
   (:import-from #:psychiq.launcher.manager
                 #:manager-stat-processed
                 #:manager-stat-failed
                 #:manager-count
                 #:manager-busy-count
+                #:manager-children
                 #:manager-queues)
+  (:import-from #:psychiq.launcher.processor
+                #:processor-id
+                #:processor-processing)
   (:import-from #:local-time
                 #:today
                 #:format-timestring
@@ -116,7 +122,14 @@
         (red:incrby (redis-key "stat" "failed")
                     failed)
         (red:incrby (redis-key "stat" "failed" today)
-                    failed))
+                    failed)
+
+        (red:del (redis-key machine-identity "workers"))
+        (dolist (processor (manager-children manager))
+          (when (processor-processing processor)
+            (red:hset (redis-key machine-identity "workers")
+                      (processor-id processor)
+                      (encode-object (processor-processing processor))))))
 
       (redis:with-pipelining
         (red:sadd (redis-key "processes")

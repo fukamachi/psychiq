@@ -13,6 +13,7 @@
            #:make-manager
            #:manager-stopped-p
            #:manager-busy-count
+           #:manager-children
            #:manager-stat-processed
            #:manager-stat-failed
            #:start
@@ -89,9 +90,9 @@
 
 (defmethod process-job :around ((processor processor) queue job-info)
   (setf (processor-processing processor)
-        (list :queue queue
-              :job job-info
-              :run-at (timestamp-to-unix (now))))
+        `(("queue" . ,queue)
+          ("job" . ,job-info)
+          ("run_at" . ,(timestamp-to-unix (now)))))
 
   (unwind-protect
        (handler-bind ((error
