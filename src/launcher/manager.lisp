@@ -4,16 +4,17 @@
         #:psychiq.util
         #:psychiq.launcher.processor
         #:psychiq.specials)
-  (:import-from #:alexandria
-                #:when-let)
   (:import-from #:local-time
                 #:timestamp-to-unix
                 #:now)
+  (:import-from #:alexandria
+                #:when-let)
   (:export #:manager
            #:make-manager
-           #:manager-stopped-p
-           #:manager-busy-count
+           #:manager-queues
+           #:manager-count
            #:manager-children
+           #:manager-stopped-p
            #:manager-stat-processed
            #:manager-stat-failed
            #:start
@@ -135,6 +136,3 @@
 (defmethod wait-for ((manager manager))
   (map nil #'wait-for (manager-children manager))
   t)
-
-(defun manager-busy-count (manager)
-  (count-if #'processor-processing (manager-children manager)))

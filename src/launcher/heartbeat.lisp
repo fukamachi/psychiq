@@ -12,17 +12,16 @@
                 #:manager-stat-processed
                 #:manager-stat-failed
                 #:manager-count
-                #:manager-busy-count
                 #:manager-children
                 #:manager-queues)
   (:import-from #:psychiq.launcher.processor
                 #:processor-id
                 #:processor-processing)
   (:import-from #:local-time
+                #:now
                 #:today
                 #:format-timestring
-                #:timestamp-to-unix
-                #:now)
+                #:timestamp-to-unix)
   (:export #:heartbeat
            #:make-heartbeat
            #:start
@@ -136,7 +135,8 @@
                   machine-identity)
         (red:hmset (redis-key machine-identity)
                    "info" json
-                   "busy" (manager-busy-count manager)
+                   "busy" (count-if #'processor-processing
+                                    (manager-children manager))
                    "beat" (timestamp-to-unix (now)))
         (red:expire (redis-key machine-identity)
                     60)))))
