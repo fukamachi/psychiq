@@ -8,10 +8,14 @@
                 #:disconnect)
   (:import-from #:psychiq.launcher.manager
                 #:manager-stat-processed
-                #:manager-stat-failed)
+                #:manager-stat-failed
+                #:manager-count
+                #:manager-queues)
   (:import-from #:local-time
                 #:today
-                #:format-timestring)
+                #:format-timestring
+                #:timestamp-to-unix
+                #:now)
   (:export #:heartbeat
            #:make-heartbeat
            #:start
@@ -27,13 +31,25 @@
   manager)
 
 (defun run (heartbeat)
-  (let ((conn (connect :host (heartbeat-host heartbeat)
-                       :port (heartbeat-port heartbeat))))
+  (let* ((conn (connect :host (heartbeat-host heartbeat)
+                        :port (heartbeat-port heartbeat)))
+         (manager (heartbeat-manager heartbeat))
+         (machine-identity (machine-identity))
+         (json (jojo:to-json
+                `(("hostname" . ,(uiop:hostname))
+                  ("started_at" . ,(timestamp-to-unix (now)))
+                  ("pid" . ,(getpid))
+                  ("concurrency" . ,(manager-count manager))
+                  ("queues" . ,(remove-duplicates (manager-queues manager)
+                                                  :test #'equal
+                                                  :from-end t))
+                  ("identity" . ,machine-identity))
+                :from :alist)))
     (unwind-protect
          (loop until (heartbeat-stopped-p heartbeat) do
            (handler-case
                (with-connection conn
-                 (heartbeat heartbeat))
+                 (heartbeat heartbeat machine-identity json))
              (redis:redis-connection-error (e)
                (vom:error "heartbeat: ~A" e)
                (disconnect conn)))
@@ -70,7 +86,7 @@
   (setf (heartbeat-thread heartbeat) nil)
   t)
 
-(defun heartbeat (heartbeat)
+(defun heartbeat (heartbeat machine-identity json)
   (let* ((manager (heartbeat-manager heartbeat))
          (processed (reset-value (manager-stat-processed manager)))
          (failed    (reset-value (manager-stat-failed manager)))
@@ -90,4 +106,14 @@
         (red:incrby (redis-key "stat" "failed")
                     failed)
         (red:incrby (redis-key "stat" "failed" today)
-                    failed)))))
+                    failed))
+
+      (redis:with-pipelining
+        (red:sadd (redis-key "processes")
+                  machine-identity)
+        (red:hmset (redis-key machine-identity)
+                   "info" json
+                   "busy" 0 ;; TODO: the number of busy workers
+                   "beat" (timestamp-to-unix (now)))
+        (red:expire (redis-key machine-identity)
+                    60)))))

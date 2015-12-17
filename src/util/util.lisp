@@ -5,7 +5,8 @@
       (:use #:cl)
       (:export #:symbol-name-with-package
                #:generate-random-id
-               #:machine-identity))))
+               #:machine-identity
+               #:getpid))))
 (in-package :psychiq.util)
 
 (cl-reexport:reexport-from :psychiq.util.assoc)
