@@ -6,9 +6,13 @@
         #:psychiq.specials)
   (:import-from #:alexandria
                 #:when-let)
+  (:import-from #:local-time
+                #:timestamp-to-unix
+                #:now)
   (:export #:manager
            #:make-manager
            #:manager-stopped-p
+           #:manager-busy-count
            #:manager-stat-processed
            #:manager-stat-failed
            #:start
@@ -84,6 +88,11 @@
   (vom:debug "Shutting down a processor..."))
 
 (defmethod process-job :around ((processor processor) queue job-info)
+  (setf (processor-processing processor)
+        (list :queue queue
+              :job job-info
+              :run-at (timestamp-to-unix (now))))
+
   (unwind-protect
        (handler-bind ((error
                         (lambda (condition)
@@ -91,6 +100,7 @@
                           (when-let (manager (processor-manager processor))
                             (incf (get-value (manager-stat-failed manager)))))))
          (call-next-method))
+    (setf (processor-processing processor) nil)
     (when-let (manager (processor-manager processor))
       (incf (get-value (manager-stat-processed manager))))))
 
@@ -124,3 +134,6 @@
 (defmethod wait-for ((manager manager))
   (map nil #'wait-for (manager-children manager))
   t)
+
+(defun manager-busy-count (manager)
+  (count-if #'processor-processing (manager-children manager)))

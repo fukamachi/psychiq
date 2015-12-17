@@ -28,6 +28,7 @@
            #:processor-manager
            #:processor-connection
            #:processor-timeout
+           #:processor-processing
            #:run
            #:start
            #:stop
@@ -47,7 +48,8 @@
   (thread nil)
   (status :stopped)
   (timeout 5)
-  down)
+  down
+  (processing nil))
 
 (defmethod print-object ((processor processor) stream)
   (print-unreadable-object (processor stream :type t)

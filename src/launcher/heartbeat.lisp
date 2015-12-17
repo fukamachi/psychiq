@@ -10,6 +10,7 @@
                 #:manager-stat-processed
                 #:manager-stat-failed
                 #:manager-count
+                #:manager-busy-count
                 #:manager-queues)
   (:import-from #:local-time
                 #:today
@@ -122,7 +123,7 @@
                   machine-identity)
         (red:hmset (redis-key machine-identity)
                    "info" json
-                   "busy" 0 ;; TODO: the number of busy workers
+                   "busy" (manager-busy-count manager)
                    "beat" (timestamp-to-unix (now)))
         (red:expire (redis-key machine-identity)
                     60)))))
