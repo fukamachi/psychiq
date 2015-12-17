@@ -24,19 +24,22 @@
 
 (defstruct (launcher (:constructor %make-launcher))
   manager
-  scheduled)
+  scheduled
+  heartbeat)
 
 (defun make-launcher (&key (host *default-redis-host*) (port *default-redis-port*)
                       (concurrency 25) (queue *default-queue-name*)
                       (interval 5))
-  (let ((manager (make-manager :host host
-                               :port port
-                               :queues (ensure-list queue)
-                               :count concurrency
-                               :timeout interval))
-        (scheduled
-          (psychiq.launcher.scheduled:make-scheduled :host host :port port)))
-    (%make-launcher :manager manager :scheduled scheduled)))
+  (let* ((manager (make-manager :host host
+                                :port port
+                                :queues (ensure-list queue)
+                                :count concurrency
+                                :timeout interval))
+         (scheduled
+           (psychiq.launcher.scheduled:make-scheduled :host host :port port))
+         (heartbeat
+           (psychiq.launcher.heartbeat:make-heartbeat :host host :port port :manager manager)))
+    (%make-launcher :manager manager :scheduled scheduled :heartbeat heartbeat)))
 
 (defmethod print-object ((launcher launcher) stream)
   (print-unreadable-object (launcher stream :type t)
@@ -61,16 +64,19 @@
 (defun start (launcher)
   (psychiq.launcher.manager:start (launcher-manager launcher))
   (psychiq.launcher.scheduled:start (launcher-scheduled launcher))
+  (psychiq.launcher.heartbeat:start (launcher-heartbeat launcher))
   launcher)
 
 (defun stop (launcher)
   (psychiq.launcher.manager:stop (launcher-manager launcher))
   (psychiq.launcher.scheduled:stop (launcher-scheduled launcher))
+  (psychiq.launcher.heartbeat:stop (launcher-heartbeat launcher))
   t)
 
 (defun kill (launcher)
   (psychiq.launcher.manager:kill (launcher-manager launcher))
   (psychiq.launcher.scheduled:kill (launcher-scheduled launcher))
+  (psychiq.launcher.heartbeat:kill (launcher-heartbeat launcher))
   t)
 
 (defun launcher-status (launcher)

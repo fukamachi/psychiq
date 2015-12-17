@@ -46,7 +46,8 @@
                   :components
                   ((:file "processor")
                    (:file "manager" :depends-on ("processor"))
-                   (:file "scheduled")))
+                   (:file "scheduled")
+                   (:file "heartbeat" :depends-on ("manager"))))
                  (:module "middleware"
                   :depends-on ("core" "util")
                   :components

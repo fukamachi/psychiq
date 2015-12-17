@@ -4,13 +4,6 @@
         #:psychiq.util
         #:psychiq.launcher.processor
         #:psychiq.specials)
-  (:import-from #:psychiq.connection
-                #:with-connection
-                #:connect
-                #:disconnect)
-  (:import-from #:local-time
-                #:today
-                #:format-timestring)
   (:import-from #:alexandria
                 #:when-let)
   (:export #:manager
@@ -41,8 +34,6 @@
   ;; stats
   stat-processed
   stat-failed
-
-  heartbeat-thread
 
   make-processor-fn)
 
@@ -111,12 +102,6 @@
   (setf (manager-stopped-p manager) nil)
   (make-child-processors manager)
   (map nil #'start (manager-children manager))
-  (setf (manager-heartbeat-thread manager)
-        (bt:make-thread
-         (lambda () (start-heartbeat manager))
-         :initial-bindings `((*standard-output* . ,*standard-output*)
-                             (*error-output* . ,*error-output*))
-         :name "psychiq heartbeat"))
   manager)
 
 (defmethod stop ((manager manager))
@@ -126,9 +111,6 @@
   (setf (manager-stopped-p manager) t)
   (vom:info "Terminating quiet processors...")
   (map nil #'stop (manager-children manager))
-  (let ((thread (manager-heartbeat-thread manager)))
-    (when (bt:threadp thread)
-      (bt:destroy-thread thread)))
   (vom:info "Exiting...")
   t)
 
@@ -136,52 +118,9 @@
   (setf (manager-stopped-p manager) t)
   (vom:info "Terminating all processors...")
   (map nil #'kill (manager-children manager))
-  (let ((thread (manager-heartbeat-thread manager)))
-    (when (bt:threadp thread)
-      (bt:destroy-thread thread)))
   (vom:info "Exiting...")
   t)
 
 (defmethod wait-for ((manager manager))
   (map nil #'wait-for (manager-children manager))
-  (let ((thread (manager-heartbeat-thread manager)))
-    (when (bt:threadp thread)
-      (bt:join-thread thread)))
   t)
-
-(defun start-heartbeat (manager)
-  (let ((conn (connect :host (manager-host manager)
-                       :port (manager-port manager))))
-    (unwind-protect
-         (loop
-           (handler-case
-               (with-connection conn
-                 (heartbeat manager))
-             (redis:redis-connection-error (e)
-               (vom:error "heartbeat: ~A" e)
-               (disconnect conn)))
-           (sleep 5))
-      (vom:info "Heartbeat stopping...")
-      (disconnect conn)
-      (setf (manager-heartbeat-thread manager) nil))))
-
-(defun heartbeat (manager)
-  (let ((processed (reset-value (manager-stat-processed manager)))
-        (failed    (reset-value (manager-stat-failed manager)))
-        (today (format-timestring nil (today)
-                                  :format '((:year 4) #\- (:month 2) #\- (:day 2)))))
-    (handler-bind ((error
-                     (lambda (e)
-                       (declare (ignore e))
-                       ;; Don't lose the counts if there was a network issue
-                       (setf (get-value (manager-stat-processed manager)) processed)
-                       (setf (get-value (manager-stat-failed manager)) failed))))
-      (redis:with-pipelining
-        (red:incrby (redis-key "stat" "processed")
-                    processed)
-        (red:incrby (redis-key "stat" "processed" today)
-                    processed)
-        (red:incrby (redis-key "stat" "failed")
-                    failed)
-        (red:incrby (redis-key "stat" "failed" today)
-                    failed)))))

@@ -1,0 +1,93 @@
+(in-package :cl-user)
+(defpackage psychiq.launcher.heartbeat
+  (:use #:cl
+        #:psychiq.util)
+  (:import-from #:psychiq.connection
+                #:with-connection
+                #:connect
+                #:disconnect)
+  (:import-from #:psychiq.launcher.manager
+                #:manager-stat-processed
+                #:manager-stat-failed)
+  (:import-from #:local-time
+                #:today
+                #:format-timestring)
+  (:export #:heartbeat
+           #:make-heartbeat
+           #:start
+           #:stop
+           #:kill))
+(in-package :psychiq.launcher.heartbeat)
+
+(defstruct heartbeat
+  host
+  port
+  thread
+  (stopped-p t)
+  manager)
+
+(defun run (heartbeat)
+  (let ((conn (connect :host (heartbeat-host heartbeat)
+                       :port (heartbeat-port heartbeat))))
+    (unwind-protect
+         (loop until (heartbeat-stopped-p heartbeat) do
+           (handler-case
+               (with-connection conn
+                 (heartbeat heartbeat))
+             (redis:redis-connection-error (e)
+               (vom:error "heartbeat: ~A" e)
+               (disconnect conn)))
+           (sleep 5))
+      (disconnect conn))))
+
+(defun start (heartbeat)
+  (setf (heartbeat-stopped-p heartbeat) nil)
+  (setf (heartbeat-thread heartbeat)
+        (bt:make-thread
+         (lambda () (run heartbeat))
+         :initial-bindings `((*standard-output* . ,*standard-output*)
+                             (*error-output* . ,*error-output*))
+         :name "psychiq heartbeat"))
+  heartbeat)
+
+(defun stop (heartbeat)
+  (when (heartbeat-stopped-p heartbeat)
+    (return-from stop nil))
+
+  (setf (heartbeat-stopped-p heartbeat) t)
+  (vom:info "Heartbeat stopping...")
+  t)
+
+(defun kill (heartbeat)
+  (setf (heartbeat-stopped-p heartbeat) t)
+
+  (let ((thread (heartbeat-thread heartbeat)))
+    (when (and (bt:threadp thread)
+               (bt:thread-alive-p thread))
+      (vom:info "Heartbeat stopping immediately...")
+      (bt:destroy-thread (heartbeat-thread heartbeat))))
+
+  (setf (heartbeat-thread heartbeat) nil)
+  t)
+
+(defun heartbeat (heartbeat)
+  (let* ((manager (heartbeat-manager heartbeat))
+         (processed (reset-value (manager-stat-processed manager)))
+         (failed    (reset-value (manager-stat-failed manager)))
+         (today (format-timestring nil (today)
+                                   :format '((:year 4) #\- (:month 2) #\- (:day 2)))))
+    (handler-bind ((error
+                     (lambda (e)
+                       (declare (ignore e))
+                       ;; Don't lose the counts if there was a network issue
+                       (setf (get-value (manager-stat-processed manager)) processed)
+                       (setf (get-value (manager-stat-failed manager)) failed))))
+      (redis:with-pipelining
+        (red:incrby (redis-key "stat" "processed")
+                    processed)
+        (red:incrby (redis-key "stat" "processed" today)
+                    processed)
+        (red:incrby (redis-key "stat" "failed")
+                    failed)
+        (red:incrby (redis-key "stat" "failed" today)
+                    failed)))))
