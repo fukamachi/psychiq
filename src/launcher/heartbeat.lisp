@@ -56,6 +56,14 @@
            (sleep 5))
       (disconnect conn))))
 
+(defun clear-heartbeat (heartbeat)
+  (let ((conn (connect :host (heartbeat-host heartbeat)
+                       :port (heartbeat-port heartbeat))))
+    (with-connection conn
+      (redis:with-pipelining
+        (red:srem (redis-key "processes") (machine-identity))))
+    (disconnect conn)))
+
 (defun start (heartbeat)
   (setf (heartbeat-stopped-p heartbeat) nil)
   (setf (heartbeat-thread heartbeat)
@@ -72,6 +80,7 @@
 
   (setf (heartbeat-stopped-p heartbeat) t)
   (vom:info "Heartbeat stopping...")
+  (clear-heartbeat heartbeat)
   t)
 
 (defun kill (heartbeat)
