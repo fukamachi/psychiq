@@ -126,34 +126,44 @@
 (defun stats ()
   (with-connection *connection*
     (destructuring-bind (processed failed
-                         schedule retry dead
+                         scheduled-size retry-size dead-size processes-size
                          default-queue-last-job
-                         queues)
+                         processes queues)
         (redis:with-pipelining
           (red:get (redis-key "stat" "processed"))
           (red:get (redis-key "stat" "failed"))
           (red:zcard (redis-key "schedule"))
           (red:zcard (redis-key "retry"))
           (red:zcard (redis-key "dead"))
+          (red:scard (redis-key "processes"))
           (red:lrange (redis-key "queue" "default") -1 -1)
+          (red:smembers (redis-key "processes"))
           (red:smembers (redis-key "queues")))
+
       `(:processed ,(if processed
                         (parse-integer processed)
                         0)
         :failed    ,(if failed
                         (parse-integer failed)
                         0)
-        :scheduled ,schedule
-        :retry ,retry
-        :dead ,dead
+        :scheduled ,scheduled-size
+        :retry ,retry-size
+        :dead ,dead-size
+        :processes ,processes-size
         :default-queue-latency ,(if default-queue-last-job
                                     (- (timestamp-to-unix (now))
                                         (aget (decode-object
                                                (first default-queue-last-job))
                                               "enqueued_at"))
                                     0)
-        :enqueued ,(reduce (lambda (count queue)
-                             (+ count
-                                 (red:llen (redis-key "queue" queue))))
-                           queues
-                           :initial-value 0)))))
+        :workers-size ,(reduce (lambda (a b)
+                                 (+ a (if b (parse-integer b) 0)))
+                               (redis:with-pipelining
+                                 (dolist (process processes)
+                                   (red:hget (redis-key process) "busy")))
+                               :initial-value 0)
+        :enqueued     ,(reduce #'+
+                               (redis:with-pipelining
+                                 (dolist (queue queues)
+                                   (red:llen (redis-key "queue" queue))))
+                               :initial-value 0)))))
