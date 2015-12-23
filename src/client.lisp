@@ -157,17 +157,17 @@
                                                (first default-queue-last-job))
                                               "enqueued_at"))
                                     0)
-        :workers-size ,(reduce (lambda (a b)
-                                 (+ a (if b (parse-integer b) 0)))
-                               (redis:with-pipelining
-                                 (dolist (process processes)
-                                   (red:hget (redis-key process) "busy")))
-                               :initial-value 0)
-        :enqueued     ,(reduce #'+
-                               (redis:with-pipelining
-                                 (dolist (queue queues)
-                                   (red:llen (redis-key "queue" queue))))
-                               :initial-value 0)))))
+        :workers  ,(reduce (lambda (a b)
+                             (+ a (if b (parse-integer b) 0)))
+                           (redis:with-pipelining
+                             (dolist (process processes)
+                               (red:hget (redis-key process) "busy")))
+                           :initial-value 0)
+        :enqueued ,(reduce #'+
+                           (redis:with-pipelining
+                             (dolist (queue queues)
+                               (red:llen (redis-key "queue" queue))))
+                           :initial-value 0)))))
 
 (defun cleanup-processes ()
   "Clean up dead processes recorded in Redis."
