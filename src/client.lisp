@@ -35,7 +35,8 @@
            #:all-retries
            #:retry-length
            #:all-dead-jobs
-           #:stats))
+           #:stats
+           #:cleanup-processes))
 (in-package :psychiq.client)
 
 (defun enqueue (worker-class &optional args)
@@ -167,3 +168,20 @@
                                  (dolist (queue queues)
                                    (red:llen (redis-key "queue" queue))))
                                :initial-value 0)))))
+
+(defun cleanup-processes ()
+  "Clean up dead processes recorded in Redis."
+  (let* ((procs (sort (red:smembers (redis-key "processes"))
+                      #'string<))
+         (heartbeats
+           (redis:with-pipelining
+             (dolist (key procs)
+               (red:hget (redis-key key) "info"))))
+         (to-prune
+           (loop for alivep in heartbeats
+                 for proc in procs
+                 unless alivep
+                   collect proc)))
+    (if to-prune
+        (apply #'red:srem (redis-key "processes") to-prune)
+        0)))

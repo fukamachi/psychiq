@@ -25,6 +25,7 @@
                                       #:all-queues #:queue-length #:queue-empty-p #:delete-queue #:slice-queue #:peek-queue
                                       #:all-retries #:retry-length
                                       #:all-dead-jobs
-                                      #:stats))
+                                      #:stats
+                                      #:cleanup-processes))
 
 (cl-reexport:reexport-from :psychiq.specials)
