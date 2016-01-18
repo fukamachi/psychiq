@@ -58,7 +58,9 @@
 
 (defun wait-for (launcher)
   (psychiq.launcher.manager:wait-for (launcher-manager launcher))
-  (bt:join-thread (scheduled-thread (launcher-scheduled launcher)))
+  (let ((thread (scheduled-thread (launcher-scheduled launcher))))
+    (when (bt:threadp thread)
+      (bt:join-thread thread)))
   t)
 
 (defun start (launcher)

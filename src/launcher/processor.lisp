@@ -147,7 +147,7 @@
   (:method ((processor processor))
     (let ((thread (processor-thread processor)))
       (when (bt:threadp thread)
-        (bt:join-thread thread)))
+        (ignore-errors (bt:join-thread thread))))
     t))
 
 (defgeneric process-job (processor queue job-info)
