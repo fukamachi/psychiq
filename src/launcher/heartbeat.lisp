@@ -130,7 +130,7 @@
                       (processor-id processor)
                       (encode-object (processor-processing processor))))))
 
-      (destructuring-bind (nil nil nil signal-to-kill)
+      (destructuring-bind (_1 _2 _3 signal-to-kill)
           (redis:with-pipelining
             (red:sadd (redis-key "processes")
                       machine-identity)
@@ -142,6 +142,7 @@
             (red:expire (redis-key machine-identity)
                         60)
             (red:rpop (redis-key (format nil "~A-signals" machine-identity))))
+        (declare (ignore _1 _2 _3))
         (when signal-to-kill
           (vom:debug "Got signal: ~A" signal-to-kill)
           #+sbcl
