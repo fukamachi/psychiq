@@ -36,10 +36,7 @@
   #-(or sbcl ccl clisp ecl cmu scl allegro gcl lispworks)
   (error "getpid is not implemented"))
 
-(defvar *process-nonce* (generate-random-id 6))
-
 (defun machine-identity ()
-  (format nil "~A:~A:~A"
+  (format nil "~A:~A"
           (uiop:hostname)
-          (getpid)
-          *process-nonce*))
+          (getpid)))

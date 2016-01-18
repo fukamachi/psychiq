@@ -130,13 +130,32 @@
                       (processor-id processor)
                       (encode-object (processor-processing processor))))))
 
-      (redis:with-pipelining
-        (red:sadd (redis-key "processes")
-                  machine-identity)
-        (red:hmset (redis-key machine-identity)
-                   "info" json
-                   "busy" (count-if #'processor-processing
-                                    (manager-children manager))
-                   "beat" (timestamp-to-unix (now)))
-        (red:expire (redis-key machine-identity)
-                    60)))))
+      (destructuring-bind (nil nil nil signal-to-kill)
+          (redis:with-pipelining
+            (red:sadd (redis-key "processes")
+                      machine-identity)
+            (red:hmset (redis-key machine-identity)
+                       "info" json
+                       "busy" (count-if #'processor-processing
+                                        (manager-children manager))
+                       "beat" (timestamp-to-unix (now)))
+            (red:expire (redis-key machine-identity)
+                        60)
+            (red:rpop (redis-key (format nil "~A-signals" machine-identity))))
+        (when signal-to-kill
+          (vom:debug "Got signal: ~A" signal-to-kill)
+          #+sbcl
+          (let* ((signum (intern (format nil "SIG~A" signal-to-kill) :sb-unix))
+                 (signum (and (boundp signum)
+                              (symbol-value signum)))
+                 (signum
+                   (cond
+                     ((eql signum sb-unix:sigusr1)
+                      sb-unix:sigint)
+                     (signum)
+                     (t
+                      sb-unix:sigint))))
+            (sb-posix:kill (getpid) signum))
+          #-sbcl
+          ;; XXX: this should actually send the signal "signal-to-kill"
+          (uiop:quit))))))
