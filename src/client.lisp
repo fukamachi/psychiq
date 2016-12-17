@@ -64,14 +64,16 @@
 
 (defun enqueue-in-sec (interval worker-class &optional args)
   (check-type interval fixnum)
-  (assert (< 0 interval))
-  (let ((job-info (encode-job worker-class args))
-        (queue (worker-queue-name
-                (allocate-instance (find-class worker-class)))))
-    (setf (aget job-info "queue") queue)
-    (with-connection *connection*
-      (enqueue-to-scheduled-queue job-info
-                                  (timestamp-to-unix (timestamp+ (now) interval :sec))))))
+  (assert (<= 0 interval))
+  (if (= 0 interval)
+      (enqueue worker-class args)
+      (let ((job-info (encode-job worker-class args))
+            (queue (worker-queue-name
+                    (allocate-instance (find-class worker-class)))))
+        (setf (aget job-info "queue") queue)
+        (with-connection *connection*
+          (enqueue-to-scheduled-queue job-info
+                                      (timestamp-to-unix (timestamp+ (now) interval :sec)))))))
 
 (defun dequeue (&optional
                   (queue-or-queues *default-queue-name*)
