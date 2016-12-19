@@ -25,12 +25,15 @@
 (defvar *connection*)
 
 (defclass connection ()
-  ((host :type 'string
+  ((host :type string
          :initarg :host
          :initform *default-redis-host*)
-   (port :type 'integer
+   (port :type integer
          :initarg :port
          :initform *default-redis-port*)
+   (db :type (or integer null)
+       :initarg :db
+       :initform nil)
    (redis :type (or redis:redis-connection null)
           :initform nil
           :accessor redis-connection)))
@@ -43,11 +46,14 @@
 
 (defgeneric open-connection (conn)
   (:method ((conn connection))
-    (with-slots (host port redis) conn
+    (with-slots (host port redis db) conn
       (setf redis
             (make-instance 'redis:redis-connection
                            :host host
-                           :port port)))
+                           :port port))
+      (let ((redis::*connection* redis))
+        (when db
+          (red:select db))))
     conn))
 
 (defgeneric close-connection (conn)
@@ -71,12 +77,12 @@
              (redis::*connection* (redis-connection ,conn)))
          ,@body))))
 
-(defun make-connection (&rest initargs &key host port)
-  (declare (ignore host port))
+(defun make-connection (&rest initargs &key host port db)
+  (declare (ignore host port db))
   (apply #'make-instance 'connection initargs))
 
-(defun connect (&rest initargs &key host port)
-  (declare (ignore host port))
+(defun connect (&rest initargs &key host port db)
+  (declare (ignore host port db))
   (open-connection (apply #'make-connection initargs)))
 
 (defun ensure-connected (conn)
@@ -93,8 +99,8 @@
       (open-connection (close-connection conn))
       (open-connection conn)))
 
-(defun connect-toplevel (&rest initargs &key host port)
-  (declare (ignore host port))
+(defun connect-toplevel (&rest initargs &key host port db)
+  (declare (ignore host port db))
   (when (and (boundp '*connection*)
              *connection*)
     (cerror "Disconnect the existing connection"
