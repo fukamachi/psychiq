@@ -53,8 +53,8 @@
               (launcher-status launcher)))))
 
 (defun run (&rest initargs
-            &key host port (concurrency 25) queue)
-  (declare (ignore host port concurrency queue))
+            &key host port db (concurrency 25) queue)
+  (declare (ignore host port db concurrency queue))
   (start (apply #'make-launcher initargs)))
 
 (defun wait-for (launcher)
