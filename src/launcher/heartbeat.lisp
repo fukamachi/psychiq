@@ -32,13 +32,15 @@
 (defstruct heartbeat
   host
   port
+  db
   thread
   (stopped-p t)
   manager)
 
 (defun run (heartbeat)
   (let* ((conn (connect :host (heartbeat-host heartbeat)
-                        :port (heartbeat-port heartbeat)))
+                        :port (heartbeat-port heartbeat)
+                        :db (heartbeat-db heartbeat)))
          (manager (heartbeat-manager heartbeat))
          (machine-identity (machine-identity))
          (json (jojo:to-json
@@ -64,7 +66,8 @@
 
 (defun clear-heartbeat (heartbeat)
   (let ((conn (connect :host (heartbeat-host heartbeat)
-                       :port (heartbeat-port heartbeat))))
+                       :port (heartbeat-port heartbeat)
+                       :db (heartbeat-db heartbeat))))
     (with-connection conn
       (redis:with-pipelining
         (red:srem (redis-key "processes") (machine-identity))))

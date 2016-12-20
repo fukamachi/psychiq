@@ -28,8 +28,8 @@
   thread
   (status :stopped))
 
-(defun make-scheduled (&key (host *default-redis-host*) (port *default-redis-port*))
-  (let ((conn (make-connection :host host :port port)))
+(defun make-scheduled (&key (host *default-redis-host*) (port *default-redis-port*) db)
+  (let ((conn (make-connection :host host :port port :db db)))
     (%make-scheduled :connection conn)))
 
 (defun start (scheduled)

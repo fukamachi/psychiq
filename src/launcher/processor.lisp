@@ -58,11 +58,12 @@
               queues
               status))))
 
-(defun make-processor (&key (host *default-redis-host*) (port *default-redis-port*) queues manager (timeout 5))
+(defun make-processor (&key (host *default-redis-host*) (port *default-redis-port*) db
+                         queues manager (timeout 5))
   (unless (and (listp queues)
                queues)
     (error ":queues must be a list containing at least one queue name"))
-  (let ((conn (make-connection :host host :port port)))
+  (let ((conn (make-connection :host host :port port :db db)))
     (%make-processor :connection conn :queues queues :manager manager :timeout timeout)))
 
 (defgeneric fetch-job (processor)

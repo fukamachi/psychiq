@@ -62,6 +62,8 @@ Options:
                   (add-option :host (pop args)))
                  (("-p" "--port")
                   (add-option :port (parse-integer (pop args))))
+                 (("-d" "--db")
+                  (add-option :db (parse-integer (pop args))))
                  (("-c" "--concurrency")
                   (add-option :concurrency (parse-integer (pop args))))
                  (("-q" "--queue")

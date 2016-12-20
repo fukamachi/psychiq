@@ -27,18 +27,19 @@
   scheduled
   heartbeat)
 
-(defun make-launcher (&key (host *default-redis-host*) (port *default-redis-port*)
+(defun make-launcher (&key (host *default-redis-host*) (port *default-redis-port*) db
                       (concurrency 25) (queue *default-queue-name*)
                       (interval 5))
   (let* ((manager (make-manager :host host
                                 :port port
+                                :db db
                                 :queues (ensure-list queue)
                                 :count concurrency
                                 :timeout interval))
          (scheduled
-           (psychiq.launcher.scheduled:make-scheduled :host host :port port))
+           (psychiq.launcher.scheduled:make-scheduled :host host :port port :db db))
          (heartbeat
-           (psychiq.launcher.heartbeat:make-heartbeat :host host :port port :manager manager)))
+           (psychiq.launcher.heartbeat:make-heartbeat :host host :port port :db db :manager manager)))
     (%make-launcher :manager manager :scheduled scheduled :heartbeat heartbeat)))
 
 (defmethod print-object ((launcher launcher) stream)

@@ -25,12 +25,13 @@
 
 (defstruct (manager (:constructor
                         %make-manager
-                      (&key host port queues count (lock (bt:make-recursive-lock))
+                      (&key host port db queues count (lock (bt:make-recursive-lock))
                        &aux
                          (stat-processed (make-thread-safe-variable 0 :lock lock))
                          (stat-failed    (make-thread-safe-variable 0 :lock lock)))))
   host
   port
+  db
   (queues '())
   (count 25)
   (children '())
@@ -43,13 +44,16 @@
 
   make-processor-fn)
 
-(defun make-manager (&key (host *default-redis-host*) (port *default-redis-port*) queues (count 25) (timeout 5))
-  (let ((manager (%make-manager :host host :port port :queues queues
+(defun make-manager (&key (host *default-redis-host*) (port *default-redis-port*) db
+                       queues (count 25) (timeout 5))
+  (let ((manager (%make-manager :host host :port port :db db
+                                :queues queues
                                 :count count)))
     (setf (manager-make-processor-fn manager)
           (lambda ()
             (make-processor :host host
                             :port port
+                            :db db
                             :queues queues
                             :manager manager
                             :timeout timeout)))
