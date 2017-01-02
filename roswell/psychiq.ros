@@ -17,6 +17,7 @@ Options:
     -d, --db DBNUM                  Redis server db (default: 0)
     -q, --queue QUEUE[,WEIGHT]      Queues to process with optional weights (several -q's allowed)
     -c, --concurrency INT           Processor threads to use (default: 25)
+    -l, --load FILE                 File to load (several -l's allowed)
     -s, --system SYSTEM             ASDF system to load before starting (several -s's allowed)
     -v, --verbose                   Print more verbose output
     -n, --namespace NAMESPACE       Redis namespace (default: \"psychiq\")
@@ -56,6 +57,7 @@ Options:
              (setf new-args (nconc new-args (list k v)))))
       (loop with queues = (list *default-queue-name*)
             with systems = '()
+            with loads = '()
             for option = (pop args)
             while option
             do (case* (option)
@@ -77,6 +79,8 @@ Options:
                                 1)))
                       (dotimes (i weight)
                         (push queue queues)))))
+                 (("-l" "--load")
+                  (push (pop args) loads))
                  (("-s" "--system")
                   (push (pop args) systems))
                  (("-n" "--namespace")
@@ -96,6 +100,8 @@ Options:
             finally
                (when queues
                  (add-option :queue (nreverse queues)))
+               (when loads
+                 (mapc #'load loads))
                (when systems
                  (ql:quickload (nreverse systems)))))
     new-args))
