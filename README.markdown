@@ -97,6 +97,28 @@ Options:
 
 When getting an error while performing a job, Psychiq will add the job to the "retry" queue. Jobs in the "retry" queue will be retried automatically with an exponential backoff. After 25 attempts, Psychiq move the job to the "dead" queue.
 
+## Web UI
+
+Since the data structure which Psychiq stores in Redis is compatible with Ruby's Resque/Sidekiq, Sidekiq's Web UI can be used.
+
+```ruby
+# config.ru
+require 'sidekiq'
+
+Sidekiq.configure_client do |config|
+  config.redis = { :size => 1, url: 'redis://localhost:6379', namespace: 'psychiq' }
+end
+
+require 'sidekiq/web'
+run Sidekiq::Web
+```
+
+```
+$ rackup config.ru
+```
+
+It will be up at http://127.0.0.1:9292 which allows you to see processes and can retry failed jobs manually.
+
 ## Requirements
 
 * SBCL (compiled with sb-thread) or Clozure CL
@@ -106,12 +128,7 @@ When getting an error while performing a job, Psychiq will add the job to the "r
 ## Installation
 
 ```
-$ cd ~/common-lisp
-$ git clone https://github.com/fukamachi/psychiq
-```
-
-```
-$ ros -l ~/common-lisp/psychiq/psychiq.asd install psychiq
+$ ros install psychiq
 ```
 
 ## Author
@@ -120,7 +137,7 @@ $ ros -l ~/common-lisp/psychiq/psychiq.asd install psychiq
 
 ## Copyright
 
-Copyright (c) 2015 Eitaro Fukamachi (e.arrows@gmail.com)
+Copyright (c) 2015-2017 Eitaro Fukamachi (e.arrows@gmail.com)
 
 ## License
 
