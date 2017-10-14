@@ -43,6 +43,7 @@
     nil))
 
 (defun encode-job (worker-class args)
+  (check-type args list)
   `(("class" . ,(symbol-name-with-package worker-class))
     ("args" . ,args)
     ("jid" . ,(generate-random-id))
