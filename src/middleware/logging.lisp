@@ -2,15 +2,8 @@
 (defpackage psychiq.middleware.logging
   (:use #:cl
         #:psychiq.util)
-  (:import-from #:local-time
-                #:timestamp-to-unix
-                #:now
-                #:format-timestring)
   (:export #:*psychiq-middleware-logging*))
 (in-package :psychiq.middleware.logging)
-
-(defparameter *date-format*
-  '((:year 4) #\- (:month 2) #\- (:day 2) #\T (:hour 2) #\: (:min 2) #\: (:sec 2) :gmt-offset-or-z))
 
 (defparameter *psychiq-middleware-logging*
   (lambda (next)
@@ -23,8 +16,7 @@
                                (class-name (class-of worker))
                                (aget job-info "jid"))))
           (flet ((info (message &rest args)
-                   (vom:info "~A ~A: ~A"
-                             (format-timestring nil (now) :format *date-format*)
+                   (vom:info "~A: ~A"
                              context
                              (apply #'format nil message args))))
             (handler-bind ((error
