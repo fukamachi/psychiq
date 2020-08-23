@@ -10,7 +10,8 @@
                "dissect"
                "vom"
                "uiop"
-               "alexandria")
+               "alexandria"
+               (:feature :sbcl "sb-posix"))
   :components ((:module "src"
                 :depends-on ("src/specials")
                 :components
