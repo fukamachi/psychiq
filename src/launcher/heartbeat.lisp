@@ -76,7 +76,7 @@
 (defun start (heartbeat)
   (setf (heartbeat-stopped-p heartbeat) nil)
   (setf (heartbeat-thread heartbeat)
-        (bt:make-thread
+        (bt2:make-thread
          (lambda () (run heartbeat))
          :initial-bindings `((*standard-output* . ,*standard-output*)
                              (*error-output* . ,*error-output*))
@@ -96,10 +96,10 @@
   (setf (heartbeat-stopped-p heartbeat) t)
 
   (let ((thread (heartbeat-thread heartbeat)))
-    (when (and (bt:threadp thread)
-               (bt:thread-alive-p thread))
+    (when (and (bt2:threadp thread)
+               (bt2:thread-alive-p thread))
       (vom:info "Heartbeat stopping immediately...")
-      (bt:destroy-thread (heartbeat-thread heartbeat))))
+      (bt2:destroy-thread (heartbeat-thread heartbeat))))
 
   (setf (heartbeat-thread heartbeat) nil)
   t)

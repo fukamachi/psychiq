@@ -116,7 +116,7 @@
   (:method ((processor processor))
     (setf (processor-status processor) :running)
     (setf (processor-thread processor)
-          (bt:make-thread
+          (bt2:make-thread
            (lambda ()
              (unwind-protect
                   (progn
@@ -139,16 +139,16 @@
   (:method ((processor processor))
     (setf (processor-status processor) :stopping)
     (let ((thread (processor-thread processor)))
-      (when (and (bt:threadp thread)
-                 (bt:thread-alive-p thread))
-        (bt:destroy-thread thread)))
+      (when (and (bt2:threadp thread)
+                 (bt2:thread-alive-p thread))
+        (bt2:destroy-thread thread)))
     t))
 
 (defgeneric wait-for (object)
   (:method ((processor processor))
     (let ((thread (processor-thread processor)))
-      (when (bt:threadp thread)
-        (ignore-errors (bt:join-thread thread))))
+      (when (bt2:threadp thread)
+        (ignore-errors (bt2:join-thread thread))))
     t))
 
 (defgeneric process-job (processor queue job-info)

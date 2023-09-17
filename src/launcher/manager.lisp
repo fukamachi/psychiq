@@ -25,7 +25,7 @@
 
 (defstruct (manager (:constructor
                         %make-manager
-                      (&key host port db queues count (lock (bt:make-recursive-lock))
+                      (&key host port db queues count (lock (bt2:make-recursive-lock))
                        &aux
                          (stat-processed (make-thread-safe-variable 0 :lock lock))
                          (stat-failed    (make-thread-safe-variable 0 :lock lock)))))
@@ -35,7 +35,7 @@
   (queues '())
   (count 25)
   (children '())
-  (lock (bt:make-recursive-lock))
+  (lock (bt2:make-recursive-lock))
   (stopped-p t)
 
   ;; stats
@@ -60,13 +60,13 @@
     manager))
 
 (defun make-child-processors (manager)
-  (bt:with-recursive-lock-held ((manager-lock manager))
+  (bt2:with-recursive-lock-held ((manager-lock manager))
     (setf (manager-children manager)
           (loop repeat (manager-count manager)
                 collect (funcall (manager-make-processor-fn manager))))))
 
 (defun processor-stopped (manager processor)
-  (bt:with-recursive-lock-held ((manager-lock manager))
+  (bt2:with-recursive-lock-held ((manager-lock manager))
     (setf (manager-children manager)
           (delete processor (manager-children manager) :test #'eq))
     (when (null (manager-children manager))
@@ -75,7 +75,7 @@
 
 (defun processor-died (manager processor e)
   (declare (ignore e))
-  (bt:with-recursive-lock-held ((manager-lock manager))
+  (bt2:with-recursive-lock-held ((manager-lock manager))
     (stop processor)
     (setf (manager-children manager)
           (delete processor (manager-children manager) :test #'eq))

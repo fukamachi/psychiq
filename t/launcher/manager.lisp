@@ -121,8 +121,8 @@
 
 (sleep 3)
 (is (remove-if-not (lambda (thread)
-                     (alexandria:starts-with-subseq "psychiq " (bt:thread-name thread)))
-                   (bt:all-threads))
+                     (alexandria:starts-with-subseq "psychiq " (bt2:thread-name thread)))
+                   (bt2:all-threads))
     nil
     "All threads has been terminated")
 

@@ -39,15 +39,15 @@
 
 (sleep 3)
 (is (remove-if-not (lambda (thread)
-                     (and (bt:thread-alive-p thread)
-                          (alexandria:starts-with-subseq "psychiq " (bt:thread-name thread))))
-                   (bt:all-threads))
+                     (and (bt2:thread-alive-p thread)
+                          (alexandria:starts-with-subseq "psychiq " (bt2:thread-name thread))))
+                   (bt2:all-threads))
     nil
     "All threads has been terminated")
 
 (subtest "can kill long interval launcher"
   (let ((launcher (make-launcher :interval 120))
-        (threads (bt:all-threads)))
+        (threads (bt2:all-threads)))
     (start launcher)
     (sleep 1)
     (kill launcher)
@@ -55,17 +55,17 @@
     (sleep 3)
 
     (is (remove-if-not (lambda (thread)
-                         (and (bt:thread-alive-p thread)
+                         (and (bt2:thread-alive-p thread)
                               (not (find thread threads :test #'eq))
-                              (alexandria:starts-with-subseq "psychiq " (bt:thread-name thread))))
-                       (bt:all-threads))
+                              (alexandria:starts-with-subseq "psychiq " (bt2:thread-name thread))))
+                       (bt2:all-threads))
         nil
         "All launcher threads has been terminated")))
 
 (is (remove-if-not (lambda (thread)
-                     (and (bt:thread-alive-p thread)
-                          (alexandria:starts-with-subseq "psychiq " (bt:thread-name thread))))
-                   (bt:all-threads))
+                     (and (bt2:thread-alive-p thread)
+                          (alexandria:starts-with-subseq "psychiq " (bt2:thread-name thread))))
+                   (bt2:all-threads))
     nil
     "All threads has been terminated")
 

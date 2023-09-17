@@ -14,7 +14,7 @@
                 #:redis-key))
 (in-package :psychiq-test.launcher.scheduled)
 
-(defvar *threads* (bt:all-threads))
+(defvar *threads* (bt2:all-threads))
 
 (plan 4)
 
@@ -28,7 +28,7 @@
   (let ((scheduled (make-scheduled)))
     (diag "start")
     (is (start scheduled) scheduled)
-    (ok (bt:threadp (scheduled-thread scheduled)))
+    (ok (bt2:threadp (scheduled-thread scheduled)))
     (is (scheduled-status scheduled) :running)
 
     (diag "stop")
@@ -65,7 +65,7 @@
              (like (first jobs) "\"jid\":\"b1ly5y10yia9\"")))
       (disconnect conn))))
 
-(is (bt:all-threads) *threads*
+(is (bt2:all-threads) *threads*
     "All threads has been terminated")
 
 (finalize)

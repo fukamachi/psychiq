@@ -39,7 +39,7 @@
   (setf (scheduled-status scheduled) :running)
   (let* ((conn (scheduled-connection scheduled))
          (thread
-           (bt:make-thread
+           (bt2:make-thread
             (lambda ()
               (unwind-protect
                    (loop while (eq (scheduled-status scheduled) :running)
@@ -74,9 +74,9 @@
 (defun kill (scheduled)
   (setf (scheduled-status scheduled) :stopping)
   (let ((thread (scheduled-thread scheduled)))
-    (when (and (bt:threadp thread)
-               (bt:thread-alive-p thread))
-      (bt:destroy-thread thread)))
+    (when (and (bt2:threadp thread)
+               (bt2:thread-alive-p thread))
+      (bt2:destroy-thread thread)))
   t)
 
 (defun enqueue-jobs (now)
