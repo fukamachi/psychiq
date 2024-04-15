@@ -25,7 +25,7 @@
              (red:discard))))))
 
 (defun redis-key (&rest keys)
-  (format nil "~A:~{~A~^:~}"
+  (format nil "~@[~A:~]~{~A~^:~}"
           *psychiq-namespace*
           keys))
 
