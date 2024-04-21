@@ -127,7 +127,7 @@ The following assumes you are running Redis on localhost and you only want to ac
 require 'sidekiq'
 
 Sidekiq.configure_client do |config|
-  config.redis = { :size => 1, url: 'redis://127.0.0.1l:6379' }
+  config.redis = { :size => 1, url: 'redis://127.0.0.1:6379' }
 end
 
 
