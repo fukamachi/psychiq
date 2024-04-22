@@ -9,7 +9,7 @@ exec ros -Q -- $0 "$@"
 (use-package :psychiq.specials)
 
 (defun print-usage ()
-  (format *error-output* "~&Usage: psychiq [option...]
+  (format *error-output* "~&Usage: psychiq.ros [option...]
 
 Options:
     -o, --host HOST                 Redis server host

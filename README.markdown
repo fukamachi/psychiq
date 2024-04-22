@@ -10,6 +10,11 @@ Psychiq provides background job processing for Common Lisp applications inspired
 
 This software is still ALPHA quality. The APIs will be likely to change.
 
+### Breaking changes
+
+1. **v0.2.0** - Removed namespaces.  See section below for details.
+
+
 ## Getting Started
 
 ### Writing a worker
@@ -46,12 +51,12 @@ The arguments must be simple JSON datatypes which can be serialized with Jonatha
 Psychiq provides a [Roswell](https://github.com/snmsts/roswell) script for starting processing:
 
 ```
-$ psychiq --host localhost --port 6379 --system myapp-workers
+$ psychiq.ros --host localhost --port 6379 --system myapp-workers
 ```
 
 ```
-$ psychiq -h
-Usage: psychiq [option...]
+$ psychiq.ros -h
+Usage: psychiq.ros [option...]
 
 Options:
     -o, --host HOST                 Redis server host (default: localhost)
@@ -93,6 +98,12 @@ Options:
 - INT: graceful shutdown, waits for all processors are idle.
 - TERM: shutdown immediately
 
+## Namespaces / Databases
+
+In version 7 Sidekiq [removed namespaces](https://github.com/sidekiq/sidekiq/blob/main/docs/7.0-Upgrade.md#redis-namespace). We handle that by setting `psychiq.specials::*psychiq-namespace*` to `NIL`.  To revert back to the previous behaviour, simply set `*psychiq-namespace*` to `"psychiq"` (the previous default), or whatever namespace you want.
+
+The recommended alternative to namespaces is to use different Redis databases.  This is handled with the `:db` keyword argument to `psy:connect-toplevel`, or the `--db` command line argument for the psychiq.ros script.
+
 ## Error Handling
 
 When getting an error while performing a job, Psychiq will add the job to the "retry" queue. Jobs in the "retry" queue will be retried automatically with an exponential backoff. After 25 attempts, Psychiq move the job to the "dead" queue.
@@ -101,20 +112,41 @@ When getting an error while performing a job, Psychiq will add the job to the "r
 
 Since the data structure which Psychiq stores in Redis is compatible with Ruby's Resque/Sidekiq, Sidekiq's Web UI can be used.
 
+The following assumes you are running Redis on localhost and you only want to access the dashboard from localhost.  This should be the least risky configuration if you are just going to cut/paste.
+
 ```ruby
-# config.ru
+# web.ru
+# Sidekiq dashboard
+#
+# Source: https://github.com/sidekiq/sidekiq/wiki/Monitoring#standalone
+#
+# Need to do the following:
+#   $ gem install rackup sidekiq securerandom rack rack-session
+#   $ rackup --host 127.0.0.1 ./web.ru
+
 require 'sidekiq'
 
 Sidekiq.configure_client do |config|
-  config.redis = { :size => 1, url: 'redis://localhost:6379', namespace: 'psychiq' }
+  config.redis = { :size => 1, url: 'redis://127.0.0.1:6379' }
 end
 
-require 'sidekiq/web'
+
+require "securerandom"
+require "rack/session"
+require "sidekiq/web"
+
+# In a multi-process deployment, all Web UI instances should share
+# this secret key so they can all decode the encrypted browser cookies
+# and provide a working session.
+# Rails does this in /config/initializers/secret_token.rb
+secret_key = SecureRandom.hex(32)
+use Rack::Session::Cookie, secret: secret_key, same_site: true, max_age: 86400
 run Sidekiq::Web
 ```
 
 ```
-$ rackup config.ru
+$ gem install rackup sidekiq securerandom rack rack-session
+$ rackup --host 127.0.0.1 ./web.ru
 ```
 
 It will be up at http://127.0.0.1:9292 which allows you to see processes and can retry failed jobs manually.

@@ -8,7 +8,8 @@
            #:*default-max-retry-attempts*))
 (in-package :psychiq.specials)
 
-(defvar *psychiq-namespace* "psychiq")
+(defvar *psychiq-namespace* nil
+  "Redis removed support for this in v7.0.  Set to \"psychiq\" for backwards compatibility.")
 
 (defvar *default-redis-host* "localhost")
 (defvar *default-redis-port* 6379)
